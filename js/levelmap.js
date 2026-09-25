@@ -10,19 +10,32 @@
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const CHAPTER = 5;
   const NODE_GAP = 132; // vertical distance between level buttons
-  const SIGN_ROOM = 150; // space above each chapter's first level for its signpost
+  const SIGN_ROOM = 190; // space above each chapter's first level for its signpost
 
   // Each chapter's world. Cycles when the levels outrun the list.
+  //   sky/skyLo: sky gradient, far/mid/near: three hill layers, tuft: grass marks,
+  //   critter: the little animated life in that world.
   const WORLDS = [
-    { name: 'Coffee Corner', sky: '#f7e6cf', hill: '#efd4b0', art: ['cafe', 'cup', 'beans', 'bush'] },
-    { name: 'Newsstand Avenue', sky: '#e2ecf3', hill: '#cddce8', art: ['kiosk', 'lamp', 'papers', 'bush'] },
-    { name: 'Library Hill', sky: '#e5efd9', hill: '#cfe2bd', art: ['books', 'tree', 'owl', 'tree'] },
-    { name: 'WordSearch Park', sky: '#dcefd2', hill: '#bfdfae', art: ['bench', 'tree', 'pond', 'flowers'] },
-    { name: 'Seaside Boardwalk', sky: '#dcf0f4', hill: '#f3e2bd', art: ['lighthouse', 'umbrella', 'waves', 'shell'] },
-    { name: 'Mountain Pass', sky: '#e7e3f4', hill: '#d3cde9', art: ['mountain', 'pine', 'mountain', 'pine'] },
-    { name: 'Autumn Orchard', sky: '#f9e3cf', hill: '#f1c9a3', art: ['orangeTree', 'pumpkin', 'orangeTree', 'leaves'] },
-    { name: 'Starry Night', sky: '#343c6b', hill: '#262d55', art: ['moon', 'starCluster', 'owl', 'starCluster'], dark: true },
+    { name: 'Coffee Corner', sky: '#fcefdc', skyLo: '#f6dcbd', far: '#f0d1ac', mid: '#e8c396', near: '#dfb382', tuft: '#b98552', critter: 'birds', art: ['cafe', 'cup', 'beans', 'bush'] },
+    { name: 'Newsstand Avenue', sky: '#edf4f9', skyLo: '#d8e6f1', far: '#cadae8', mid: '#b9ccdd', near: '#a8bfd4', tuft: '#7f97ad', critter: 'pages', art: ['kiosk', 'lamp', 'papers', 'bush'] },
+    { name: 'Library Hill', sky: '#eff6e6', skyLo: '#dcebca', far: '#d0e3ba', mid: '#bdd8a3', near: '#a8cc8b', tuft: '#6f9e56', critter: 'birds', art: ['books', 'tree', 'owl', 'tree'] },
+    { name: 'WordSearch Park', sky: '#e8f6df', skyLo: '#d1ecc2', far: '#c3e4af', mid: '#aad996', near: '#91cb7b', tuft: '#5f9e4a', critter: 'butterflies', art: ['bench', 'tree', 'pond', 'flowers'] },
+    { name: 'Seaside Boardwalk', sky: '#e4f5f9', skyLo: '#c9eaf2', far: '#9fd6e4', mid: '#f6e7c4', near: '#eed7a6', tuft: '#cfae72', critter: 'gulls', art: ['lighthouse', 'umbrella', 'waves', 'shell'] },
+    { name: 'Mountain Pass', sky: '#efedf9', skyLo: '#dcd7f0', far: '#cbc4e7', mid: '#b6addc', near: '#a59cd1', tuft: '#7d74b0', critter: 'snow', art: ['mountain', 'pine', 'mountain', 'pine'] },
+    { name: 'Autumn Orchard', sky: '#fdeedd', skyLo: '#f8d8b9', far: '#f3cea7', mid: '#eebc8a', near: '#e6a76f', tuft: '#b7663a', critter: 'leaves', art: ['orangeTree', 'pumpkin', 'orangeTree', 'leaves'] },
+    { name: 'Starry Night', sky: '#262c57', skyLo: '#3a4279', far: '#2c3264', mid: '#242a57', near: '#1d2249', tuft: '#434b86', critter: 'fireflies', art: ['moon', 'starCluster', 'owl', 'starCluster'], dark: true },
   ];
+
+  // The little animated life in each world (drawn small; CSS moves them).
+  const CRITTERS = {
+    birds: { count: 3, cls: 'fly', svg: `<svg viewBox="0 0 40 20"><path class="wing" d="M2 12 Q10 2 20 11 Q30 2 38 12" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
+    gulls: { count: 3, cls: 'fly', svg: `<svg viewBox="0 0 40 20"><path class="wing" d="M2 12 Q10 2 20 11 Q30 2 38 12" fill="#fff" stroke="${INK}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
+    pages: { count: 3, cls: 'drift', svg: `<svg viewBox="0 0 40 46"><path d="M4 4 H30 L36 10 V42 H4 Z" fill="#fffaf1" stroke="${INK}" stroke-width="2.6" stroke-linejoin="round"/><path d="M9 12 H29 M9 18 H31 M9 24 H31 M9 30 H24" stroke="${INK}" stroke-opacity="0.45" stroke-width="2.4"/><path d="M9 12 H22" stroke="${INK}" stroke-width="3.6"/></svg>` },
+    butterflies: { count: 4, cls: 'flutter', svg: `<svg viewBox="0 0 40 32"><g class="wing"><path d="M20 16 C12 2 2 4 4 14 C6 22 16 20 20 16 Z M20 16 C28 2 38 4 36 14 C34 22 24 20 20 16 Z" fill="#ff9aa8" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/></g><path d="M20 9 V25" stroke="${INK}" stroke-width="3" stroke-linecap="round"/></svg>` },
+    leaves: { count: 6, cls: 'fall spin', svg: `<svg viewBox="0 0 30 30"><path d="M4 26 C4 12 14 4 26 4 C26 16 18 26 4 26 Z" fill="#f39a4b" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/><path d="M6 24 L20 10" stroke="${INK}" stroke-width="2" stroke-linecap="round"/></svg>` },
+    snow: { count: 10, cls: 'fall', svg: `<svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="4.5" fill="#fff" stroke="#9a93c7" stroke-width="1.5"/></svg>` },
+    fireflies: { count: 9, cls: 'glow', svg: `<svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="3.5" fill="#fff4a8"/></svg>` },
+  };
 
   const s = `stroke="${INK}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"`;
 
@@ -100,7 +113,7 @@
       const narrow = width < 560;
       const cx = width / 2;
       const amp = Math.min(narrow ? width * 0.26 : width * 0.2, 190);
-      const artSize = narrow ? 76 : 118;
+      const artSize = narrow ? 84 : 134;
 
       // Road points: one per level, with room above each chapter for its signpost.
       const pts = [];
@@ -118,38 +131,73 @@
 
       // ---- Chapter worlds (scenery bands) ----
       const chapters = count / CHAPTER;
+      const bands = [];
       for (let c = 0; c < chapters; c++) {
         const world = WORLDS[c % WORLDS.length];
         const firstLevel = c * CHAPTER + 1;
         const top = c === 0 ? 0 : pts[c * CHAPTER][1] - SIGN_ROOM - 40;
         const bottom = c === chapters - 1 ? height : pts[(c + 1) * CHAPTER][1] - SIGN_ROOM - 40;
-        const band = CC.el('div', 'world' + (world.dark ? ' dark' : '') + (firstLevel > next ? ' locked' : ''));
+        // The chapter right after the current one stays colourful (only lightly faded) to
+        // tease what's next; later ones are washed out, and further ones fogged below.
+        const upcoming = c === Math.floor((next - 1) / CHAPTER) + 1;
+        const band = CC.el('div', 'world' + (world.dark ? ' dark' : '') + (firstLevel > next ? (upcoming ? ' upcoming' : ' locked') : ''));
+        bands.push(band);
         place(band, 0, top, width, bottom - top + 60);
         band.style.zIndex = String(c + 1);
 
-        // Sky + rolling hills along the top edge, drawn in this world's colours.
+        // Sky, sun or moon, and three layers of rolling hills in this world's colours,
+        // with a faint newspaper-print dot texture over the hills.
         const h = bottom - top + 60;
+        band.style.setProperty('--w', width);
+        band.style.setProperty('--h', h);
         const bg = svgEl('svg', { class: 'world-bg', width, height: h, viewBox: `0 0 ${width} ${h}`, preserveAspectRatio: 'none' });
         const rng = CC.makeRng(c * 97 + 11);
-        let hills = `M0 ${h} L0 40`;
+        const defs = svgEl('defs', {});
+        const skyId = `sky-${c}`;
+        const dotId = `dots-${c}`;
+        defs.innerHTML = `<linearGradient id="${skyId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${world.sky}"/><stop offset="1" stop-color="${world.skyLo}"/></linearGradient>
+          <pattern id="${dotId}" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.1" fill="${world.dark ? '#fff' : INK}" fill-opacity="${world.dark ? 0.08 : 0.07}"/></pattern>`;
+        bg.appendChild(defs);
+        const ridge = (baseY, jitter, bumps, seedY) => {
+          let d = `M0 ${h} L0 ${baseY + seedY()}`;
+          for (let b = 0; b < bumps; b++) {
+            const x0 = (b / bumps) * width;
+            const x1 = ((b + 1) / bumps) * width;
+            d += ` Q${(x0 + x1) / 2} ${baseY - jitter + seedY()} ${x1} ${baseY + seedY()}`;
+          }
+          return d + ` L${width} ${h} Z`;
+        };
         const bumps = Math.max(3, Math.round(width / 260));
-        for (let b = 0; b < bumps; b++) {
-          const x0 = (b / bumps) * width;
-          const x1 = ((b + 1) / bumps) * width;
-          hills += ` Q${(x0 + x1) / 2} ${-10 + rng() * 30} ${x1} ${30 + rng() * 20}`;
+        const skyPath = ridge(30, 30, bumps, () => rng() * 24);
+        bg.appendChild(svgEl('path', { d: skyPath, fill: `url(#${skyId})` }));
+        // The sun, with slowly turning rays, in the top corner (alternating sides). Night
+        // worlds have their own moons among the landmarks.
+        const sunX = c % 2 ? width * 0.14 : width * 0.86;
+        const sunR = narrow ? 26 : 38;
+        if (!world.dark) {
+          bg.appendChild(svgEl('circle', { cx: sunX, cy: 120, r: sunR * 2.2, fill: '#fff3c4', opacity: 0.5 }));
+          bg.appendChild(svgEl('circle', { class: 'sun-rays', cx: sunX, cy: 120, r: sunR * 1.5, fill: 'none', stroke: '#ffcf4d', 'stroke-width': narrow ? 5 : 7, 'stroke-linecap': 'round', 'stroke-dasharray': narrow ? '2 13' : '3 17' }));
+          bg.appendChild(svgEl('circle', { cx: sunX, cy: 120, r: sunR, fill: '#ffe08a', stroke: INK, 'stroke-opacity': '0.25', 'stroke-width': '3' }));
         }
-        hills += ` L${width} ${h} Z`;
-        bg.appendChild(svgEl('path', { d: hills, fill: world.sky }));
-        // A second, darker hill line lower down for depth.
-        let back = `M0 ${h} L0 ${h * 0.55}`;
-        for (let b = 0; b < bumps + 1; b++) {
-          const x0 = (b / (bumps + 1)) * width;
-          const x1 = ((b + 1) / (bumps + 1)) * width;
-          back += ` Q${(x0 + x1) / 2} ${h * 0.45 + rng() * 40} ${x1} ${h * 0.55 + rng() * 30}`;
+        const layers = [
+          [h * 0.36, 60, world.far, 0.8],
+          [h * 0.6, 50, world.mid, 0.9],
+          [h * 0.82, 40, world.near, 1],
+        ];
+        layers.forEach(([baseY, jitter, fill, op], i) => {
+          const d = ridge(baseY, jitter, bumps + i, () => (rng() - 0.5) * 40);
+          bg.appendChild(svgEl('path', { d, fill, opacity: String(op) }));
+          bg.appendChild(svgEl('path', { d, fill: `url(#${dotId})` }));
+        });
+        bg.appendChild(svgEl('path', { d: skyPath.split(' L' + width)[0], fill: 'none', stroke: INK, 'stroke-opacity': '0.12', 'stroke-width': '3' }));
+        // Grass tufts scattered over the lower slopes.
+        let tufts = '';
+        for (let t = 0; t < (narrow ? 10 : 18); t++) {
+          const tx = rng() * width;
+          const ty = h * (0.45 + rng() * 0.5);
+          tufts += `M${tx} ${ty} l3 -8 l3 8 M${tx + 6} ${ty} l3 -6 l2 6 `;
         }
-        back += ` L${width} ${h} Z`;
-        bg.appendChild(svgEl('path', { d: back, fill: world.hill, opacity: '0.55' }));
-        bg.appendChild(svgEl('path', { d: hills.split(' L' + width)[0], fill: 'none', stroke: INK, 'stroke-opacity': '0.12', 'stroke-width': '3' }));
+        bg.appendChild(svgEl('path', { d: tufts, fill: 'none', stroke: world.tuft, 'stroke-width': '2.4', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: '0.7' }));
         band.appendChild(bg);
 
         // Clouds (light worlds) drifting in the sky.
@@ -165,9 +213,29 @@
         } else {
           for (let k = 0; k < 40; k++) {
             const star = CC.el('span', 'night-star');
-            place(star, rng() * width, 30 + rng() * (h - 60));
+            place(star, rng() * width, 30 + rng() * (h * 0.5));
             star.style.animationDelay = -rng() * 3 + 's';
             band.appendChild(star);
+          }
+          const shooting = CC.el('span', 'shooting-star');
+          place(shooting, width * (0.2 + rng() * 0.5), 60 + rng() * 120);
+          band.appendChild(shooting);
+        }
+
+        // This world's critters. Each gets its own speed, height and head start.
+        const kind = CRITTERS[world.critter];
+        if (kind) {
+          for (let k = 0; k < kind.count; k++) {
+            const critter = CC.el('div', `critter ${world.critter} ${kind.cls}`);
+            critter.innerHTML = `<span>${kind.svg}</span>`;
+            const flying = kind.cls === 'fly';
+            const size = flying ? (narrow ? 26 : 34) : kind.cls === 'glow' ? 10 : kind.cls === 'fall' ? 12 : narrow ? 26 : 32;
+            const x = rng() * (width - 60) + 10;
+            const y = flying ? 40 + rng() * h * 0.3 : kind.cls.startsWith('fall') ? -20 : 60 + rng() * (h - 160);
+            place(critter, flying ? 0 : x, y, size * (kind.cls === 'drift' ? 0.9 : 1), size);
+            critter.style.animationDuration = (flying ? 16 + rng() * 10 : kind.cls.startsWith('fall') ? 9 + rng() * 7 : kind.cls === 'drift' ? 14 + rng() * 8 : 6 + rng() * 5) + 's';
+            critter.style.animationDelay = -rng() * 20 + 's';
+            band.appendChild(critter);
           }
         }
 
@@ -199,11 +267,36 @@
 
         host.appendChild(band);
 
-        // Wooden signpost naming the chapter (above the road, so it isn't painted over).
-        const sign = CC.el('div', 'signpost' + (firstLevel > next ? ' locked' : ''));
-        sign.innerHTML = `<span class="sign-board"><small>Chapter ${c + 1}</small>${world.name}</span><span class="sign-post"></span>`;
-        place(sign, cx, pts[c * CHAPTER][1] - SIGN_ROOM + 6);
+        // Wooden signpost naming the chapter, with its progress: a pip per level cleared
+        // and the stars earned (counted up to 3 a level). Gold ribbon once all are done.
+        let cleared = 0;
+        let chapterStars = 0;
+        for (let l = firstLevel; l < firstLevel + CHAPTER; l++) {
+          if (completed[l]) {
+            cleared++;
+            chapterStars += Math.min(3, completed[l].stars);
+          }
+        }
+        const done = cleared === CHAPTER;
+        const sign = CC.el('div', 'signpost' + (firstLevel > next ? ' locked' : '') + (done ? ' complete' : ''));
+        const pips = Array.from({ length: CHAPTER }, (_, k) => `<i class="${k < cleared ? 'on' : ''}"></i>`).join('');
+        sign.innerHTML = `<span class="sign-board"><small>Chapter ${c + 1}</small><span class="sign-name">${world.name}</span>
+            <span class="sign-meta"><span class="sign-pips">${pips}</span><span class="sign-stars">${icons.star}${chapterStars}/${CHAPTER * 3}</span></span>
+            ${done ? '<span class="sign-ribbon">Complete</span>' : ''}</span>
+          <span class="sign-posts"><span class="sign-post"></span><span class="sign-post"></span></span>`;
+        sign.setAttribute('role', 'img');
+        sign.setAttribute('aria-label', `Chapter ${c + 1}, ${world.name}: ${cleared} of ${CHAPTER} levels cleared${done ? ', complete' : ''}`);
+        place(sign, cx, pts[c * CHAPTER][1] - SIGN_ROOM + 14);
         host.appendChild(sign);
+
+        // Fog over worlds two or more chapters ahead, with a teaser of what's there.
+        const nextChapter = Math.floor((next - 1) / CHAPTER);
+        if (c > nextChapter + 1) {
+          const fog = CC.el('div', 'map-fog' + (c === nextChapter + 2 ? ' edge' : ''));
+          place(fog, 0, top + 30, width, bottom - top + 30);
+          fog.innerHTML = `<span class="fog-label"><small>Chapter ${c + 1}</small><b>${world.name}</b><em>Clear Chapter ${c} to explore</em></span>`;
+          host.appendChild(fog);
+        }
       }
 
       // ---- The road ----
@@ -219,7 +312,9 @@
         return d;
       };
       const full = pathTo(count);
+      road.appendChild(svgEl('path', { d: full, class: 'road-shadow', transform: 'translate(0 7)' }));
       road.appendChild(svgEl('path', { d: full, class: 'road-edge' }));
+      road.appendChild(svgEl('path', { d: full, class: 'road-stones' }));
       road.appendChild(svgEl('path', { d: full, class: 'road-top' }));
       road.appendChild(svgEl('path', { d: pathTo(Math.min(next, count)), class: 'road-done' }));
       road.appendChild(svgEl('path', { d: full, class: 'road-dash' }));
@@ -234,6 +329,7 @@
         place(node, x, py);
         if (record) {
           node.classList.add('done');
+          if (record.stars >= 3) node.classList.add('gold');
           node.innerHTML = `${starArc(record.stars, icons)}<span class="coin"><span class="num">${level}</span></span>`;
           node.setAttribute('aria-label', `Level ${level}, completed, ${record.stars} stars. Replay`);
           node.addEventListener('click', () => onPlay(level));
@@ -289,6 +385,18 @@
       place(buddy, cur[0] + side * (narrow ? 64 : 84) - msize / 2, cur[1] - msize * 0.85, msize, msize);
       buddy.addEventListener('click', () => onPlay(next));
       host.appendChild(buddy);
+
+      // Critters, clouds and stars only animate in worlds on screen.
+      if (this.observer) this.observer.disconnect();
+      if ('IntersectionObserver' in window) {
+        this.observer = new IntersectionObserver(
+          (entries) => entries.forEach((e) => e.target.classList.toggle('awake', e.isIntersecting)),
+          { root: host.parentElement, rootMargin: '200px 0px' }
+        );
+        bands.forEach((b) => this.observer.observe(b));
+      } else {
+        bands.forEach((b) => b.classList.add('awake'));
+      }
 
       return cur[1];
     },

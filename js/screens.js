@@ -329,6 +329,11 @@
 
   const map = $('#level-map');
 
+  const mapJump = $('#map-jump');
+  const mapScroll = $('#level-scroll');
+  let mapNextY = 0;
+  let mapNext = 1;
+
   function renderLevelMap() {
     const next = Save.nextLevel();
     const nextY = CC.LevelMap.render(map, {
@@ -337,14 +342,29 @@
       icons: ICONS,
       onPlay: playLevel,
     });
+    mapNextY = nextY;
+    mapNext = next;
     $('#levels-stars').innerHTML = `${ICONS.star}<span>${Save.totalStars()}</span>`;
 
     // Bring the next playable level into view.
     requestAnimationFrame(() => {
-      const scroller = $('#level-scroll');
-      scroller.scrollTop = Math.max(0, nextY - scroller.clientHeight / 2);
+      mapScroll.scrollTop = Math.max(0, nextY - mapScroll.clientHeight / 2);
+      syncMapJump();
     });
   }
+
+  // "Back to Level N" appears once the next level is well out of view.
+  function syncMapJump() {
+    const mid = mapScroll.scrollTop + mapScroll.clientHeight / 2;
+    const away = Math.abs(mid - mapNextY) > mapScroll.clientHeight * 0.6;
+    mapJump.hidden = !away;
+    if (away) mapJump.textContent = `${mid > mapNextY ? '↑' : '↓'} Back to Level ${mapNext}`;
+  }
+
+  mapScroll.addEventListener('scroll', syncMapJump, { passive: true });
+  mapJump.addEventListener('click', () => {
+    mapScroll.scrollTo({ top: Math.max(0, mapNextY - mapScroll.clientHeight / 2), behavior: 'smooth' });
+  });
 
   // ---- Stats: the paper's "Sports & Stats" page ----
 

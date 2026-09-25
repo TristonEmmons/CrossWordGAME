@@ -728,10 +728,27 @@ code {
   opacity: 0.75;
 }
 
+.world.upcoming .world-bg,
+.world.upcoming .landmark {
+  filter: saturate(0.75);
+}
+
 .landmark {
   position: absolute;
   pointer-events: none;
   filter: drop-shadow(0 4px 0 rgba(43, 42, 51, 0.12));
+}
+
+.landmark::after {
+  content: '';
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: -4%;
+  z-index: -1;
+  height: 12%;
+  border-radius: 50%;
+  background: rgba(43, 42, 51, 0.12);
 }
 
 .landmark svg,
@@ -773,7 +790,7 @@ code {
   50% { opacity: 1; }
 }
 
-/* Wooden signpost at the start of each chapter */
+/* Wooden signpost at the start of each chapter, with the chapter's progress */
 .signpost {
   position: absolute;
   z-index: 55;
@@ -790,19 +807,18 @@ code {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 7px 20px 8px;
+  gap: 2px;
+  padding: 8px 26px 9px;
   border: 3px solid var(--news-ink);
-  border-radius: 10px;
+  border-radius: 12px;
   background:
-    repeating-linear-gradient(0deg, transparent 0 11px, rgba(110, 65, 30, 0.18) 11px 13px),
-    linear-gradient(#d99a5b, #c5824a);
-  box-shadow: 4px 4px 0 var(--news-ink);
+    repeating-linear-gradient(0deg, transparent 0 13px, rgba(110, 65, 30, 0.2) 13px 15px),
+    linear-gradient(#dca064, #c27f47);
+  box-shadow: 5px 5px 0 var(--news-ink), inset 0 2px 0 rgba(255, 240, 215, 0.45);
   color: #fff8ec;
   font-family: 'Abril Fatface', Georgia, serif;
-  font-size: 22px;
   line-height: 1.1;
   white-space: nowrap;
-  text-shadow: 2px 2px 0 rgba(43, 42, 51, 0.55);
   transform: rotate(-2deg);
 }
 
@@ -810,40 +826,343 @@ code {
 .sign-board::after {
   content: '';
   position: absolute;
-  top: 8px;
-  width: 6px;
-  height: 6px;
+  top: 9px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--news-ink);
   opacity: 0.6;
 }
 
-.sign-board::before { left: 8px; }
-.sign-board::after { right: 8px; }
+.sign-board::before { left: 9px; }
+.sign-board::after { right: 9px; }
 
 .sign-board small {
   font-family: 'Fredoka', 'Nunito', sans-serif;
   font-weight: 700;
   font-size: 11px;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  text-shadow: none;
   color: #fff2dc;
-  opacity: 0.95;
+}
+
+.sign-name {
+  font-size: 26px;
+  text-shadow: 2px 2px 0 rgba(43, 42, 51, 0.55);
+}
+
+.sign-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 3px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(43, 42, 51, 0.28);
+}
+
+.sign-pips {
+  display: flex;
+  gap: 4px;
+}
+
+.sign-pips i {
+  width: 10px;
+  height: 10px;
+  border: 2px solid #fff2dc;
+  border-radius: 50%;
+}
+
+.sign-pips i.on {
+  background: #ffd35e;
+  border-color: #ffd35e;
+  box-shadow: 0 0 0 1.5px var(--news-ink);
+}
+
+.sign-stars {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-family: 'Fredoka', 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.sign-stars svg {
+  width: 14px;
+  height: 14px;
+  color: #ffd35e;
+}
+
+.sign-ribbon {
+  position: absolute;
+  top: -14px;
+  right: -18px;
+  padding: 3px 10px;
+  border: 2.5px solid var(--news-ink);
+  border-radius: 4px;
+  background: linear-gradient(#ffe08a, #f1b93a);
+  box-shadow: 2px 2px 0 var(--news-ink);
+  color: var(--news-ink);
+  font-family: 'Fredoka', 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transform: rotate(10deg);
+}
+
+.sign-posts {
+  display: flex;
+  gap: 70px;
+  margin-top: -3px;
 }
 
 .sign-post {
   width: 12px;
-  height: 34px;
-  margin-top: -3px;
+  height: 40px;
   border: 3px solid var(--news-ink);
   border-top: 0;
-  background: #b0703e;
+  background: linear-gradient(90deg, #c07d45, #9c6232);
 }
 
 .signpost.locked {
   filter: saturate(0.45);
-  opacity: 0.85;
+  opacity: 0.9;
+}
+
+.signpost.complete .sign-board {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 13px, rgba(110, 65, 30, 0.2) 13px 15px),
+    linear-gradient(#e2a869, #c98a4e);
+}
+
+.narrow .sign-name {
+  font-size: 21px;
+}
+
+.narrow .sign-board {
+  padding: 7px 20px 8px;
+}
+
+.narrow .sign-posts {
+  gap: 52px;
+}
+
+/* Fog over worlds two or more chapters ahead: a soft veil with a teaser label. */
+.map-fog {
+  position: absolute;
+  z-index: 64;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(ellipse 60% 30% at 20% 30%, rgba(255, 255, 255, 0.9), transparent 70%),
+    radial-gradient(ellipse 55% 30% at 80% 60%, rgba(255, 255, 255, 0.9), transparent 70%),
+    linear-gradient(rgba(250, 247, 242, 0.82), rgba(250, 247, 242, 0.9));
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  pointer-events: none;
+}
+
+.map-fog.edge {
+  -webkit-mask-image: linear-gradient(transparent, #000 160px);
+  mask-image: linear-gradient(transparent, #000 160px);
+}
+
+.fog-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 24px;
+  border: 3px dashed rgba(43, 42, 51, 0.45);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--news-ink);
+  text-align: center;
+}
+
+.fog-label small {
+  font-family: 'Fredoka', 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.fog-label b {
+  font-family: 'Abril Fatface', Georgia, serif;
+  font-weight: 400;
+  font-size: 26px;
+}
+
+.fog-label em {
+  font-family: 'Old Standard TT', Georgia, serif;
+  font-size: 14px;
+}
+
+/* World critters: birds, gulls, pages, butterflies, leaves, snow and fireflies. They only
+   move while their world is on screen (.awake). */
+.critter {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-play-state: paused;
+}
+
+.critter > span,
+.critter svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.sun-rays {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sun-turn 40s linear infinite;
+  animation-play-state: paused;
+}
+
+@keyframes sun-turn {
+  to { transform: rotate(360deg); }
+}
+
+.world.awake .sun-rays,
+.world.awake .critter,
+.world.awake .critter *,
+.world.awake .map-cloud,
+.world.awake .night-star,
+.world.awake .shooting-star {
+  animation-play-state: running;
+}
+
+.map-cloud,
+.night-star,
+.shooting-star,
+.critter * {
+  animation-play-state: paused;
+}
+
+.critter.fly {
+  animation-name: critter-fly;
+}
+
+.critter.fly > span {
+  animation: critter-bob 2.2s ease-in-out infinite;
+}
+
+.critter.fly .wing {
+  transform-origin: 50% 60%;
+  animation: critter-flap 0.5s ease-in-out infinite alternate;
+}
+
+.critter.drift {
+  animation-name: critter-drift;
+}
+
+.critter.drift > span {
+  animation: critter-tumble 3s ease-in-out infinite alternate;
+}
+
+.critter.flutter {
+  animation-name: critter-flutter;
+  animation-timing-function: ease-in-out;
+  animation-direction: alternate;
+}
+
+.critter.flutter .wing {
+  transform-origin: 50% 50%;
+  animation: critter-wings 0.25s ease-in-out infinite alternate;
+}
+
+.critter.fall {
+  animation-name: critter-fall;
+}
+
+.critter.spin > span {
+  animation: critter-spin 4s linear infinite;
+}
+
+.critter.glow {
+  animation-name: critter-glow;
+  animation-timing-function: ease-in-out;
+  animation-direction: alternate;
+  filter: drop-shadow(0 0 6px rgba(255, 244, 168, 0.95));
+}
+
+@keyframes critter-fly {
+  from { transform: translateX(-60px); }
+  to { transform: translateX(calc(var(--w) * 1px + 60px)); }
+}
+
+@keyframes critter-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes critter-flap {
+  from { transform: scaleY(1); }
+  to { transform: scaleY(-0.4); }
+}
+
+@keyframes critter-drift {
+  from { transform: translate(-80px, 0) rotate(-10deg); }
+  50% { transform: translate(calc(var(--w) * 0.5px), 60px) rotate(12deg); }
+  to { transform: translate(calc(var(--w) * 1px + 80px), 10px) rotate(-8deg); }
+}
+
+@keyframes critter-tumble {
+  from { transform: rotate(-20deg) scaleX(1); }
+  to { transform: rotate(25deg) scaleX(0.7); }
+}
+
+@keyframes critter-flutter {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(70px, -40px); }
+  50% { transform: translate(130px, 10px); }
+  75% { transform: translate(60px, 50px); }
+  100% { transform: translate(-40px, 20px); }
+}
+
+@keyframes critter-wings {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0.3); }
+}
+
+@keyframes critter-fall {
+  from { transform: translate(0, 0); }
+  to { transform: translate(80px, calc(var(--h) * 1px)); }
+}
+
+@keyframes critter-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes critter-glow {
+  0% { transform: translate(0, 0); opacity: 0.2; }
+  50% { opacity: 1; }
+  100% { transform: translate(40px, -30px); opacity: 0.3; }
+}
+
+.shooting-star {
+  position: absolute;
+  width: 90px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255, 246, 200, 0), #fff6c8);
+  border-radius: 2px;
+  opacity: 0;
+  transform: rotate(-24deg);
+  animation: shooting-star 7s ease-in 2s infinite;
+}
+
+@keyframes shooting-star {
+  0%, 86% { opacity: 0; transform: rotate(-24deg) translateX(0); }
+  90% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(-24deg) translateX(220px); }
 }
 
 .map-end {
@@ -887,20 +1206,32 @@ code {
   stroke-linejoin: round;
 }
 
+.road-shadow {
+  stroke: rgba(43, 42, 51, 0.16);
+  stroke-width: 44;
+}
+
 .road-edge {
   stroke: var(--news-ink);
-  stroke-width: 40;
+  stroke-width: 42;
   stroke-opacity: 0.85;
+}
+
+/* Cobbles peeking out along both edges of the road */
+.road-stones {
+  stroke: #fbf1dc;
+  stroke-width: 36;
+  stroke-dasharray: 0.1 13;
 }
 
 .road-top {
   stroke: #f4e2bf;
-  stroke-width: 32;
+  stroke-width: 30;
 }
 
 .road-done {
   stroke: #ffd35e;
-  stroke-width: 32;
+  stroke-width: 30;
 }
 
 .road-dash {
@@ -910,9 +1241,11 @@ code {
   stroke-opacity: 0.9;
 }
 
-.narrow .road-edge { stroke-width: 32; }
+.narrow .road-shadow { stroke-width: 36; }
+.narrow .road-edge { stroke-width: 34; }
+.narrow .road-stones { stroke-width: 29; stroke-dasharray: 0.1 11; }
 .narrow .road-top,
-.narrow .road-done { stroke-width: 25; }
+.narrow .road-done { stroke-width: 24; }
 
 /* Level buttons: chunky coins */
 .map-node {
@@ -1003,6 +1336,23 @@ code {
 
 .map-node.current .num {
   font-size: 40px;
+}
+
+.map-node.gold .coin::before {
+  border-color: rgba(255, 216, 102, 0.95);
+  border-style: solid;
+  border-width: 3px;
+}
+
+/* A warm spotlight on the ground under the level to play next */
+.map-node.current::after {
+  content: '';
+  position: absolute;
+  inset: -40px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 225, 130, 0.6), rgba(255, 225, 130, 0) 70%);
+  pointer-events: none;
 }
 
 .map-node.current::before {
@@ -1257,8 +1607,43 @@ code {
 
 body.high-contrast .world-bg,
 body.high-contrast .landmark,
-body.high-contrast .map-cloud {
+body.high-contrast .map-cloud,
+body.high-contrast .critter,
+body.high-contrast .shooting-star {
   display: none;
+}
+
+/* "Back to my level" button, shown when the next level is scrolled out of view */
+.map-jump {
+  position: absolute;
+  left: 50%;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border: 3px solid var(--news-ink);
+  border-radius: 999px;
+  background: var(--coral, #ff6b5b);
+  box-shadow: 0 4px 0 var(--news-ink);
+  color: #fff;
+  font-family: 'Fredoka', 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  white-space: nowrap;
+  cursor: pointer;
+  translate: -50% 0;
+  animation: bubble-pop 0.35s cubic-bezier(0.34, 1.7, 0.64, 1) both;
+}
+
+.map-jump:hover {
+  transform: translateY(-2px);
+}
+
+.map-jump:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 3px;
 }
 
 /* ---------- Game screen ---------- */
