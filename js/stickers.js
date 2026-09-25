@@ -25,13 +25,32 @@
     const f = (n) => n.toFixed(2);
     const star = 'M' + pts.map(([x, y]) => `${f(x)} ${f(y)}`).join(' L') + ' Z';
     // Ten facets from the centre give the star its bevelled, embossed look.
-    const facets = pts
-      .map((p, j) => {
-        const q = pts[(j + 1) % 10];
-        const fill = j % 2 === 0 ? '#ffd966' : '#f4ab22';
-        return `<path d="M${cx} ${cy} L${f(p[0])} ${f(p[1])} L${f(q[0])} ${f(q[1])} Z" fill="${fill}"/>`;
-      })
-      .join('');
+    // `colorFor(j)` picks each facet's colour.
+    const facets = (colorFor) =>
+      pts
+        .map((p, j) => {
+          const q = pts[(j + 1) % 10];
+          return `<path d="M${cx} ${cy} L${f(p[0])} ${f(p[1])} L${f(q[0])} ${f(q[1])} Z" fill="${colorFor(j)}"/>`;
+        })
+        .join('');
+    const goldFacets = facets((j) => (j % 2 === 0 ? '#ffd966' : '#f4ab22'));
+    // Shiny (4th-star) sticker: each point a different holographic tint.
+    const HOLO = [
+      ['#ffc2e4', '#f27fbc'],
+      ['#ffe38a', '#f2b233'],
+      ['#b2f2dc', '#4fc9a5'],
+      ['#c3d3ff', '#7f9ff2'],
+      ['#ffd2b0', '#f59d5e'],
+    ];
+    const shinyFacets = facets((j) => HOLO[Math.floor(j / 2)][j % 2]);
+    const body = (facetMarkup, rim) => `
+            <path d="${star}" fill="#fff" stroke="rgba(90,60,10,0.14)" stroke-width="15.5" stroke-linejoin="round"/>
+            <path d="${star}" fill="#fff" stroke="#fff" stroke-width="13" stroke-linejoin="round"/>
+            <g clip-path="url(#stk-clip)">${facetMarkup}</g>
+            <path d="${star}" fill="url(#stk-glow)"/>
+            <path d="${star}" fill="none" stroke="${rim}" stroke-width="1.8" stroke-linejoin="round"/>
+            <ellipse cx="38" cy="33" rx="17" ry="7" transform="rotate(-34 38 33)" fill="#fff" opacity="0.55" clip-path="url(#stk-clip)"/>
+            <path d="M71 18 L72.6 23.4 L78 25 L72.6 26.6 L71 32 L69.4 26.6 L64 25 L69.4 23.4 Z" fill="#fff"/>`;
 
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -45,14 +64,10 @@
             <stop offset="1" stop-color="#c97c06"/>
           </linearGradient>
           <clipPath id="stk-clip"><path d="${star}"/></clipPath>
-          <symbol id="sticker-star" viewBox="0 0 100 100">
-            <path d="${star}" fill="#fff" stroke="rgba(90,60,10,0.14)" stroke-width="15.5" stroke-linejoin="round"/>
-            <path d="${star}" fill="#fff" stroke="#fff" stroke-width="13" stroke-linejoin="round"/>
-            <g clip-path="url(#stk-clip)">${facets}</g>
-            <path d="${star}" fill="url(#stk-glow)"/>
-            <path d="${star}" fill="none" stroke="url(#stk-rim)" stroke-width="1.8" stroke-linejoin="round"/>
-            <ellipse cx="38" cy="33" rx="17" ry="7" transform="rotate(-34 38 33)" fill="#fff" opacity="0.55" clip-path="url(#stk-clip)"/>
-            <path d="M71 18 L72.6 23.4 L78 25 L72.6 26.6 L71 32 L69.4 26.6 L64 25 L69.4 23.4 Z" fill="#fff"/>
+          <symbol id="sticker-star" viewBox="0 0 100 100">${body(goldFacets, 'url(#stk-rim)')}
+          </symbol>
+          <symbol id="sticker-star-shiny" viewBox="0 0 100 100">${body(shinyFacets, '#d77fb0')}
+            <path d="M24 60 L25.2 64 L29 65.2 L25.2 66.4 L24 70 L22.8 66.4 L19 65.2 L22.8 64 Z" fill="#fff"/>
           </symbol>
         </defs>
       </svg>`;
@@ -113,8 +128,10 @@
     node.setAttribute('class', 'sticker');
     node.setAttribute('viewBox', '0 0 100 100');
     node.setAttribute('aria-hidden', 'true');
+    const shiny = Save.progress.stickerLog[i] === 'shiny';
+    if (shiny) node.classList.add('shiny');
     const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-    use.setAttribute('href', '#sticker-star');
+    use.setAttribute('href', shiny ? '#sticker-star-shiny' : '#sticker-star');
     node.appendChild(use);
     node.style.width = geometry.size + 'px';
     node.style.height = geometry.size + 'px';
@@ -180,7 +197,8 @@
         count.classList.add('bump');
         CC.Audio.sfx('stick');
         const r = board.getBoundingClientRect();
-        CC.Effects.burst(r.left + s.x, r.top + s.y, 14);
+        const shiny = node.classList.contains('shiny');
+        CC.Effects.burst(r.left + s.x, r.top + s.y, shiny ? 26 : 14, shiny ? 'gold' : undefined);
       }, FLIGHT_MS * LAND_AT)
     );
     anim.onfinish = () => {

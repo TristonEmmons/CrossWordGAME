@@ -619,7 +619,8 @@
     active = false;
     const time = elapsed;
     const hintCount = usedHintCount;
-    const stars = Math.max(1, 3 - hintCount);
+    // No hints = 3 stars; no hints plus any bonus word = a surprise 4th star.
+    const stars = hintCount === 0 ? (bonusFound.size > 0 ? 4 : 3) : Math.max(1, 3 - hintCount);
     const firstTime = Save.recordCompletion(puzzle.level, stars, time, hintCount);
     // Only new levels brew coffee, so replaying easy levels can't farm cups.
     const brew = firstTime ? Save.brewCoffee(hintCount) : null;

@@ -29,6 +29,8 @@
       levelTracks: {},
       // stars already stuck on the main menu; any beyond this animate in on the next visit
       menuStarsShown: 0,
+      // one entry per star earned, in order: 'gold', or 'shiny' for a level's 4th star
+      stickerLog: [],
       // coffee cups in hand; each one finds a random word
       coffee: 3,
       // progress (0..1) toward brewing the next cup; see brewCoffee()
@@ -61,6 +63,15 @@
   const progress = Object.assign(emptyProgress(), read(PROGRESS_KEY) || {});
   const settings = Object.assign({}, DEFAULT_SETTINGS, read(SETTINGS_KEY) || {});
   let usedSet = new Set(progress.usedWords);
+
+  // Rebuild the sticker log for saves made before it existed (or if it drifted).
+  (function syncStickerLog() {
+    const levels = Object.values(progress.completed);
+    const total = levels.reduce((sum, c) => sum + c.stars, 0);
+    if (Array.isArray(progress.stickerLog) && progress.stickerLog.length === total) return;
+    const shiny = levels.filter((c) => c.stars >= 4).length;
+    progress.stickerLog = new Array(total - shiny).fill('gold').concat(new Array(shiny).fill('shiny'));
+  })();
 
   CC.Save = {
     progress,
@@ -101,6 +112,8 @@
     // Returns true the first time a level is completed.
     recordCompletion(level, stars, time, hints) {
       const prev = progress.completed[level];
+      const prevStars = prev ? prev.stars : 0;
+      for (let s = prevStars + 1; s <= stars; s++) progress.stickerLog.push(s >= 4 ? 'shiny' : 'gold');
       progress.completed[level] = {
         stars: prev ? Math.max(prev.stars, stars) : stars,
         bestTime: prev ? Math.min(prev.bestTime, time) : time,

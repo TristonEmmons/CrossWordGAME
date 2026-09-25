@@ -16,6 +16,8 @@
       '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>',
     star:
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z" fill="currentColor"/></svg>',
+    holoStar:
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z" fill="url(#holo-grad)" stroke="#fff" stroke-width="0.9" stroke-linejoin="round"/></svg>',
     check:
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   };
@@ -215,7 +217,7 @@
           `<span class="num">${level}</span><span class="badge">${ICONS.check}</span>` +
           `<span class="mini-stars">${[1, 2, 3]
             .map((s) => `<i class="${s <= record.stars ? 'on' : ''}">${ICONS.star}</i>`)
-            .join('')}</span>`;
+            .join('')}${record.stars >= 4 ? `<i class="on holo">${ICONS.holoStar}</i>` : ''}</span>`;
         node.setAttribute('aria-label', `Level ${level}, completed, ${record.stars} stars. Replay`);
         node.addEventListener('click', () => playLevel(level));
       } else if (level === next) {
@@ -269,13 +271,19 @@
 
   // ---- Level complete ----
 
+  let completeTimers = [];
+
   function showComplete(result) {
+    completeTimers.forEach(clearTimeout);
+    completeTimers = [];
+    $('#complete-note').classList.remove('bonus-note');
     $('#complete-title').textContent = `Level ${result.level} complete!`;
     $('#stat-time').textContent = CC.formatTime(result.time);
     $('#stat-hints').textContent = `${result.hints} of 2`;
     $('#stat-bonus').textContent = result.bonusTotal ? `${result.bonusFound} of ${result.bonusTotal}` : '—';
     $('#stat-bonus').parentElement.classList.toggle('all-bonus', !!result.bonusTotal && result.bonusFound === result.bonusTotal);
     const starsHost = $('#complete-stars');
+    starsHost.classList.remove('four');
     starsHost.innerHTML = [1, 2, 3].map(() => `<span class="big-star">${ICONS.star}</span>`).join('');
     const starNodes = CC.$$('.big-star', starsHost);
     openModal('modal-complete');
@@ -288,8 +296,27 @@
       }, 600 + i * 450);
     });
     showBrew(result.brew);
-    $('#complete-note').textContent =
-      result.stars === 3 ? 'Solved without hints — perfect!' : 'Solve it without hints for 3 stars.';
+    const note = $('#complete-note');
+    note.textContent = result.stars >= 3 ? 'Solved without hints — perfect!' : 'Solve it without hints for 3 stars.';
+
+    // The 4th star is never mentioned up front: it just appears after the other three.
+    if (result.stars >= 4) {
+      completeTimers.push(
+        setTimeout(() => {
+          const bonusStar = CC.el('span', 'big-star bonus-star');
+          bonusStar.innerHTML = ICONS.holoStar;
+          starsHost.classList.add('four');
+          starsHost.appendChild(bonusStar);
+          CC.Audio.sfx('bonus');
+          setTimeout(() => {
+            const r = bonusStar.getBoundingClientRect();
+            CC.Effects.burst(r.left + r.width / 2, r.top + r.height / 2, 34, 'gold');
+          }, 350);
+          note.textContent = 'Bonus star! Your hidden-word find earned a 4th star.';
+          note.classList.add('bonus-note');
+        }, 2400)
+      );
+    }
   }
 
   // Coffee brewing bar: fills by this level's share, and pours a cup when it tops out.

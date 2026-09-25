@@ -658,9 +658,14 @@ code {
 
 .mini-stars {
   position: absolute;
-  bottom: -20px;
+  bottom: -22px;
   display: flex;
+  align-items: center;
   gap: 1px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(60, 45, 20, 0.18);
 }
 
 .mini-stars i {
@@ -1768,6 +1773,62 @@ input[type='range']::-moz-range-thumb {
 .big-star.empty {
   transform: scale(0.85);
   opacity: 0.5;
+}
+
+/* The surprise 4th star: holographic, spins in after the other three */
+.big-stars.four .big-star {
+  width: 58px;
+  height: 58px;
+}
+
+.big-stars.four .big-star:nth-child(2) {
+  width: 70px;
+  height: 70px;
+}
+
+.big-stars .big-star {
+  transition: width 0.4s ease, height 0.4s ease, opacity 0.3s;
+}
+
+.big-star.bonus-star,
+.big-stars.four .big-star.bonus-star {
+  width: 74px;
+  height: 74px;
+  margin-top: -14px;
+  opacity: 1;
+  transform: none;
+  filter: drop-shadow(0 3px 0 #d77fb0) drop-shadow(0 0 12px rgba(255, 190, 120, 0.85));
+  animation:
+    star-surprise 0.9s cubic-bezier(0.34, 1.6, 0.64, 1) both,
+    holo-shift 3s 0.9s linear infinite;
+}
+
+@keyframes star-surprise {
+  0% { transform: scale(0) rotate(-220deg); opacity: 0; }
+  60% { transform: scale(1.35) rotate(12deg); opacity: 1; }
+  100% { transform: none; opacity: 1; }
+}
+
+@keyframes holo-shift {
+  from { filter: drop-shadow(0 3px 0 #d77fb0) drop-shadow(0 0 12px rgba(255, 190, 120, 0.85)) hue-rotate(0deg); }
+  to { filter: drop-shadow(0 3px 0 #d77fb0) drop-shadow(0 0 12px rgba(255, 190, 120, 0.85)) hue-rotate(360deg); }
+}
+
+.card .sub.bonus-note {
+  color: #b0569a;
+  font-weight: 800;
+  animation: fade-up 0.4s ease both;
+}
+
+.mini-stars i.holo {
+  width: 23px;
+  height: 23px;
+  margin-top: -2px;
+  filter: drop-shadow(0 1px 0 #c0609a) drop-shadow(0 0 4px rgba(255, 150, 200, 0.9));
+}
+
+.sticker.shiny {
+  filter: drop-shadow(0 2px 1.5px rgba(90, 60, 10, 0.3)) drop-shadow(0 0 5px rgba(255, 170, 220, 0.8));
 }
 
 @keyframes star-in {
