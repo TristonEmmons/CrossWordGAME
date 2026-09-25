@@ -1,7 +1,8 @@
 /* Coffee ranks: the player's progression title, earned by completing numbered levels.
    All rank data lives in RANKS below; everything else asks CC.Ranks. To add a rank,
    fill in its entry (`ready: true`, `levels`, `description`, `badge`, `color`,
-   `accent`, and optionally `trim`, `tier` (see TIERS), `mascot` and `milestone`) and add its artwork to BADGES / MASCOT_EXTRAS. */
+   `accent`, and optionally `trim`, `tier` (see TIERS), `mascot`, `milestone`, and for a
+   bigger rank-up `kicker`, `cheer` and `fanfare`) and add its artwork to BADGES / MASCOT_EXTRAS. */
 (function () {
   'use strict';
 
@@ -185,6 +186,37 @@
       <ellipse cx="31" cy="21" rx="16" ry="4" fill="#120a06" stroke="#e0b44c" stroke-width="2.6"/>
       <path d="M27 15 C24 11 30 9 27 5 M35 15 C32 11 38 9 35 5" fill="none" stroke="#8a7560" stroke-width="2.6" stroke-linecap="round"/>
     </svg>`,
+
+    // The Daily Legend: everything the game is about in one picture. A gilded cup stands
+    // in front of a front page with a bold masthead and a crossword grid, under a gold
+    // crown and over a "Legend" ribbon.
+    dailyLegend: `<svg viewBox="0 0 64 64" aria-hidden="true">
+      <g transform="rotate(-6 32 30)">
+        <path d="M11 9 H53 V48 H11 Z" fill="#fffaf1" stroke="#2b2a33" stroke-width="2.6" stroke-linejoin="round"/>
+        <path d="M15 13.5 H49" stroke="#2b2a33" stroke-width="3.2"/>
+        <path d="M15 17.5 H49" stroke="#2b2a33" stroke-width="0.9"/>
+        <g fill="#fffaf1" stroke="#2b2a33" stroke-width="0.9">
+          <rect x="37" y="20" width="4" height="4"/><rect x="41" y="20" width="4" height="4" fill="#2b2a33"/><rect x="45" y="20" width="4" height="4"/>
+          <rect x="37" y="24" width="4" height="4"/><rect x="41" y="24" width="4" height="4"/><rect x="45" y="24" width="4" height="4" fill="#2b2a33"/>
+          <rect x="37" y="28" width="4" height="4" fill="#2b2a33"/><rect x="41" y="28" width="4" height="4"/><rect x="45" y="28" width="4" height="4"/>
+        </g>
+        <path d="M15 21 H33 M15 24 H33 M15 27 H29" stroke="#9c9489" stroke-width="1.2"/>
+      </g>
+      <path d="M22 1.5 L25.5 5.5 L32 0.5 L38.5 5.5 L42 1.5 L41 9 H23 Z" fill="#e0b44c" stroke="#2b2a33" stroke-width="1.8" stroke-linejoin="round"/>
+      <circle cx="32" cy="6" r="1.3" fill="#c8323b"/>
+      <g transform="translate(-4 6) scale(0.86)">
+      <ellipse cx="31" cy="49" rx="18" ry="4" fill="#e0b44c" stroke="#2b2a33" stroke-width="2.4"/>
+      <path d="M43 29 C52 28 52 41 41 40" fill="none" stroke="#2b2a33" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M43 29 C49 29 49 38 41 38" fill="none" stroke="#f3d88a" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M17 25 H45 L43 38 A8 8 0 0 1 35 45 H27 A8 8 0 0 1 19 38 Z" fill="#e0b44c" stroke="#2b2a33" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M22 29 V38" stroke="#fff4cf" stroke-width="2.4" stroke-linecap="round"/>
+      <ellipse cx="31" cy="25" rx="14" ry="3.6" fill="#3a1f12" stroke="#2b2a33" stroke-width="2.6"/>
+      <path d="M28.6 24.9 C27.4 23.7 28.4 22.9 29.4 23.5 C30 22.9 31.2 23.5 30.2 24.9 L29.4 25.6 Z" fill="#f3d88a"/>
+      </g>
+      <path d="M3 51 L9 52 L7 56 L11 61 L2 59 Z M61 51 L55 52 L57 56 L53 61 L62 59 Z" fill="#8a6414" stroke="#2b2a33" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M8 51 C20 55 44 55 56 51 L57 59 C44 63 20 63 7 59 Z" fill="#121114" stroke="#2b2a33" stroke-width="2" stroke-linejoin="round"/>
+      <text x="32" y="59.6" text-anchor="middle" font-family="Georgia, serif" font-size="5.6" font-weight="700" textLength="26" lengthAdjust="spacingAndGlyphs" fill="#f3d88a">LEGEND</text>
+    </svg>`,
   };
 
   // Small extras worn by the menu mascot. A rank lists the extras it wears in `mascot`;
@@ -262,6 +294,19 @@
         <path d="M-38 -12 L-14 -2 M38 -12 L14 -2" stroke="#4a4652" stroke-width="4" stroke-linecap="round"/>
         <rect x="-11" y="-11" width="22" height="22" rx="6" fill="#e0b44c" stroke="#0d0c10" stroke-width="5"/>
       </g>`,
+
+    // The final rank's crown: a small gold crown set on top of the beret.
+    crown: `
+      <g transform="rotate(-14 170 160)">
+        <path d="M140 102 L146 62 L164 84 L180 52 L196 84 L214 62 L220 102 Z" fill="#e0b44c" stroke="#1e1b22" stroke-width="6" stroke-linejoin="round"/>
+        <path d="M140 102 H220" stroke="#1e1b22" stroke-width="6" stroke-linecap="round"/>
+        <path d="M144 94 H216" stroke="#b8892a" stroke-width="5"/>
+        <circle cx="180" cy="80" r="7" fill="#c8323b" stroke="#1e1b22" stroke-width="3.5"/>
+        <circle cx="146" cy="62" r="5" fill="#fff4cf" stroke="#1e1b22" stroke-width="3"/>
+        <circle cx="180" cy="52" r="5" fill="#fff4cf" stroke="#1e1b22" stroke-width="3"/>
+        <circle cx="214" cy="62" r="5" fill="#fff4cf" stroke="#1e1b22" stroke-width="3"/>
+        <path d="M152 88 L158 76" stroke="#fff4cf" stroke-width="4" stroke-linecap="round"/>
+      </g>`,
   };
 
   // Premium tiers, lowest first. A rank's `tier` includes every tier below it, so each
@@ -270,6 +315,7 @@
     { id: 'reserve', label: 'Reserve tier' },
     { id: 'elite', label: 'Elite tier' },
     { id: 'black', label: 'Top shelf' },
+    { id: 'legend', label: 'Legend' },
   ];
 
   // The full ladder. `levels` is how many numbered levels must be completed to reach
@@ -403,7 +449,27 @@
       mascot: ['gildedRim', 'beret', 'beanPin', 'jasmine', 'paper', 'wafer', 'monocle', 'bowTie'],
       ready: true,
     },
-    { id: 'daily-legend', number: 10, name: 'The Daily Legend', ready: false },
+    {
+      id: 'daily-legend',
+      number: 10,
+      name: 'The Daily Legend',
+      description: 'The ultimate Crazy WordSearch solver.',
+      levels: 45,
+      badge: 'dailyLegend',
+      color: '#b8892a',
+      accent: '#121114',
+      trim: '#fff1bf',
+      // Legend: the top-shelf styling in gold, with the name set in the paper's masthead type.
+      tier: 'legend',
+      milestone: 'Top of the ladder',
+      // The final rank-up runs as a front page: its own kicker, a line of congratulations,
+      // and the longest fanfare.
+      kicker: 'Stop the presses!',
+      cheer: 'Congratulations, you’ve reached the top.',
+      fanfare: 'legend',
+      mascot: ['gildedRim', 'beret', 'crown', 'beanPin', 'jasmine', 'paper', 'wafer', 'monocle', 'bowTie'],
+      ready: true,
+    },
   ];
 
   // Numbered levels completed in a row from level 1 (the same count that unlocks levels).

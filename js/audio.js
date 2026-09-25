@@ -208,6 +208,13 @@
       [783.99, 987.77, 1174.66, 1567.98].forEach((f) => tone(f, 1.05, 1.4, 'triangle', 0.08));
       [1568, 2093, 2637].forEach((f, i) => tone(f, 1.1 + i * 0.06, 0.6, 'sine', 0.03));
     },
+    legend() {
+      // The milestone fanfare, then a final rising run that lands on a bright held chord.
+      SFX.milestone();
+      [1046.5, 1174.66, 1318.5, 1568, 1760, 2093].forEach((f, i) => tone(f, 2.2 + i * 0.05, 0.3, 'triangle', 0.05));
+      [523.25, 783.99, 1046.5, 1318.5, 1568].forEach((f) => tone(f, 2.55, 1.8, 'triangle', 0.07));
+      tone(3136, 2.6, 1.2, 'sine', 0.025);
+    },
   };
 
   CC.Audio = {

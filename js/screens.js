@@ -220,7 +220,7 @@
       const r = node.getBoundingClientRect();
       const x = r.left + r.width / 2;
       const y = r.top + r.height / 2;
-      CC.Audio.sfx(rank.milestone ? 'milestone' : 'rankUp');
+      CC.Audio.sfx(rank.fanfare || (rank.milestone ? 'milestone' : 'rankUp'));
       CC.Effects.burst(x, y, rank.milestone ? 56 : 30, [rank.color, rank.accent, rank.trim || '#ffc145', '#fffaf1']);
       if (rank.milestone) setTimeout(() => CC.Effects.burst(x, y, 30, 'gold'), 260);
     }, delay);
@@ -230,10 +230,11 @@
   // edition: an "Extra! Extra!" kicker, a stamp with the milestone, and the rank's motto.
   function promotionHtml(rank) {
     const kicker = rank.milestone
-      ? `Extra! Extra! <i class="promo-stamp">${rank.milestone}</i>`
-      : 'Promoted!';
+      ? `${rank.kicker || 'Extra! Extra!'} <i class="promo-stamp">${rank.milestone}</i>`
+      : rank.kicker || 'Promoted!';
     const motto = rank.milestone ? `<em class="promo-motto">“${rank.description}”</em>` : '';
-    return `<span class="rank-badge">${CC.Ranks.badgeHtml(rank)}</span><span class="promo-text"><small>${kicker}</small><b>${rank.name}</b>${motto}</span>`;
+    const cheer = rank.cheer ? `<span class="promo-cheer">${rank.cheer}</span>` : '';
+    return `<span class="rank-badge">${CC.Ranks.badgeHtml(rank)}</span><span class="promo-text"><small>${kicker}</small><b>${rank.name}</b>${cheer}${motto}</span>`;
   }
 
   $('#rank-chip').addEventListener('click', () => showScreen('stats'));
@@ -242,7 +243,7 @@
   function rankPanelHtml() {
     const { current, next, fraction, levelsToGo } = CC.Ranks.progress();
     let nextLine;
-    if (!next) nextLine = 'Top rank reached. Legendary!';
+    if (!next) nextLine = 'You’ve reached the top. Every level still counts in your stats.';
     else if (levelsToGo == null) nextLine = 'Next rank coming soon';
     else nextLine = `${levelsToGo} more level${levelsToGo === 1 ? '' : 's'} to ${next.name}`;
     const ladder = CC.Ranks.all

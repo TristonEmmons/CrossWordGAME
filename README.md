@@ -56,17 +56,19 @@ Players climb a ladder of 10 coffee ranks by completing numbered levels. The cur
 | 7 | Kona Reserve ◆ | 30 levels | Premium puzzle-solving territory. | + a gilded rim on the cup |
 | 8 | Geisha Reserve ★ ✦ | 35 levels | Reserved for the truly dedicated. | + a jasmine sprig on the beret, and a soft gold glow |
 | 9 | Black Label ★ ■ | 40 levels | Elite status. One cup away from legend. | + a black satin bow tie |
+| 10 | The Daily Legend ★ ♛ | 45 levels | The ultimate Crazy WordSearch solver. | + a gold crown on the beret |
 
-All rank data lives in `RANKS` in `js/ranks.js`, with badge art in `BADGES` and mascot extras in `MASCOT_EXTRAS`. Rank 10 is listed there but not yet playable.
+All rank data lives in `RANKS` in `js/ranks.js`, with badge art in `BADGES` and mascot extras in `MASCOT_EXTRAS`. The Daily Legend is the top rank. Past level 45 the rank stays put, while levels, stars, coffee and stats carry on as normal.
 
 Premium tiers stack (`TIERS` in `js/ranks.js`): each includes the ones below it.
 - `reserve` (◆): gold-foil edging on the menu rank chip and the Stats rank panel.
 - `elite` (✦): adds a double gold rule, a ✦ by the rank name and a gold glow around the menu mascot.
 - `black` (■, "top shelf"): sets the menu chip, the Stats rank name and the promotion card on a small black label with gold lettering.
+- `legend` (♛): turns that label gold and sets the rank name in the paper's blackletter masthead type.
 
 The tiers only change the menu, Stats and level-complete card, never the puzzle.
 
-Every rank-up plays a fanfare and bursts confetti in the rank's colours. Ranks with a `milestone` label (★) get the special-edition version: an "Extra! Extra!" headline with a stamp, the rank's motto, a gold shine, gold stars and a longer fanfare. Ranks are earned strictly in order: the lookup climbs the ladder and stops at the first rank that isn't built or earned.
+Every rank-up plays a fanfare and bursts confetti in the rank's colours. Ranks with a `milestone` label (★) get the special-edition version: an "Extra! Extra!" headline with a stamp, the rank's motto, a gold shine, gold stars and a longer fanfare. A rank can also set its own `kicker`, a `cheer` line and a `fanfare` sound. The Daily Legend uses these for "Stop the presses!", "Congratulations, you've reached the top." and the longest fanfare. Ranks are earned strictly in order: the lookup climbs the ladder and stops at the first rank that isn't built or earned.
 
 ## Today's Paper
 

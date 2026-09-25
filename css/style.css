@@ -4014,6 +4014,81 @@ body.high-contrast #screen-stats {
   background: linear-gradient(100deg, transparent, rgba(255, 230, 170, 0.35), transparent);
 }
 
+/* Legend (the final rank): the top-shelf label turned gold, with the rank name set in the
+   paper's blackletter masthead type, like a front-page nameplate. */
+.rank-chip[data-tier~='legend'] {
+  border-color: #6b4d10;
+  background: linear-gradient(135deg, #f7dc8a, #d9a93c 55%, #f3d27a);
+  color: var(--news-ink);
+  box-shadow: 0 3px 0 var(--news-ink), inset 0 0 0 2px #f7dc8a, inset 0 0 0 3.5px #121114,
+    inset 0 0 0 5px #f7dc8a, inset 0 0 0 6px #121114;
+}
+
+.rank-chip[data-tier~='legend']:hover {
+  box-shadow: 0 5px 0 var(--news-ink), inset 0 0 0 2px #f7dc8a, inset 0 0 0 3.5px #121114,
+    inset 0 0 0 5px #f7dc8a, inset 0 0 0 6px #121114;
+}
+
+.rank-chip[data-tier~='legend'] .rank-chip-text small,
+.rank-chip[data-tier~='legend'] .rank-chip-text b::after {
+  color: #121114;
+}
+
+.rank-chip[data-tier~='legend'] .rank-chip-text b,
+.sp-rank[data-tier~='legend'] .rank-info h4,
+.promotion[data-tier~='legend'] b {
+  font-family: 'Grenze Gotisch', 'Abril Fatface', Georgia, serif;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.rank-chip[data-tier~='legend'] .rank-chip-text b {
+  font-size: calc(1.3rem * var(--ui-scale));
+}
+
+.sp-rank[data-tier~='legend'] .rank-info h4 {
+  background: linear-gradient(135deg, #f7dc8a, #d9a93c 55%, #f3d27a);
+  box-shadow: inset 0 0 0 2px #f7dc8a, inset 0 0 0 3.5px #121114;
+  color: #121114;
+  font-size: 34px;
+}
+
+.sp-rank[data-tier~='legend'] .rank-info h4::after {
+  color: #121114;
+}
+
+.promotion[data-tier~='legend'] {
+  border-color: #6b4d10;
+  background:
+    linear-gradient(#121114, #121114) left 0 bottom 6px / 100% 2px no-repeat,
+    linear-gradient(135deg, #f7dc8a, #d9a93c 55%, #f3d27a);
+  color: #121114;
+}
+
+.promotion[data-tier~='legend'] small,
+.promotion[data-tier~='legend'] .promo-motto {
+  color: #121114;
+}
+
+.promotion[data-tier~='legend'] .promo-stamp {
+  border-color: #8a1f2a;
+  color: #8a1f2a;
+}
+
+.promotion[data-tier~='legend'] b {
+  font-size: 26px;
+}
+
+.promotion[data-tier~='legend']::after {
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+}
+
+.promo-cheer {
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
 /* Menu rank chip: a little celebration the first time a new rank shows up */
 .rank-chip.promoted {
   animation: fade-up 0.5s 0.5s ease both, rank-chip-cheer 0.9s 1.1s cubic-bezier(0.34, 1.7, 0.64, 1) 2;
