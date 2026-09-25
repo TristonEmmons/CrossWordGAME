@@ -360,6 +360,33 @@ code {
   -webkit-tap-highlight-color: transparent;
 }
 
+.mascot {
+  position: relative;
+}
+
+/* A rank extra (e.g. a beret) laid over the picture; it moves exactly like the image. */
+.mascot-extra {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.mascot-extra:empty {
+  display: none;
+}
+
+.mascot-extra svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.mascot img,
+.mascot-extra {
+  transform-origin: 50% 90%;
+  animation: mascot-bob 3.2s ease-in-out 1s infinite;
+}
+
 .mascot img {
   display: block;
   width: 100%;
@@ -370,13 +397,15 @@ code {
   user-select: none;
 }
 
-.mascot:hover img {
+.mascot:hover img,
+.mascot:hover .mascot-extra {
   animation-play-state: paused;
   transform: rotate(-6deg) scale(1.05);
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.mascot.hop img {
+.mascot.hop img,
+.mascot.hop .mascot-extra {
   animation: mascot-hop 0.7s cubic-bezier(0.3, 0.7, 0.4, 1);
 }
 
@@ -3570,7 +3599,7 @@ body.high-contrast #screen-stats {
   border-radius: 50%;
   background:
     radial-gradient(circle at 50% 50%, #fffaf1 0 58%, transparent 59%),
-    repeating-conic-gradient(var(--rank-color, #c98a52) 0 10deg, #e8b98a 10deg 20deg);
+    repeating-conic-gradient(var(--rank-color, #c98a52) 0 10deg, var(--rank-accent, #e8b98a) 10deg 20deg);
   box-shadow: 2px 2px 0 var(--news-ink);
 }
 
@@ -3793,4 +3822,23 @@ body.high-contrast #screen-stats {
   font-family: 'Abril Fatface', Georgia, serif;
   font-weight: 400;
   font-size: 22px;
+}
+
+/* Menu rank chip: a little celebration the first time a new rank shows up */
+.rank-chip.promoted {
+  animation: fade-up 0.5s 0.5s ease both, rank-chip-cheer 0.9s 1.1s cubic-bezier(0.34, 1.7, 0.64, 1) 2;
+}
+
+.rank-chip.promoted .rank-badge {
+  animation: rank-badge-spin 1.2s 1.1s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@keyframes rank-chip-cheer {
+  0%, 100% { transform: none; }
+  40% { transform: scale(1.12) rotate(-2deg); }
+}
+
+@keyframes rank-badge-spin {
+  from { transform: rotate(-360deg) scale(0.6); }
+  to { transform: none; }
 }

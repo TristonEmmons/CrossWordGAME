@@ -126,9 +126,12 @@
     const started = next > 1 || Save.progress.inProgress[1];
     $('#start-sub').textContent = started ? `Continue · Level ${next}` : 'Level 1';
     renderDailyButton();
-    renderRankChip();
+    // A rank earned outside a level finish (e.g. a save from before that rank existed)
+    // is celebrated here instead, once.
+    const promoted = CC.Ranks.checkPromotion();
+    renderRankChip(promoted);
     CC.Stickers.show(stickerDelay == null ? 550 : stickerDelay);
-    mascotGreet(stickerDelay == null ? 700 : 1500);
+    mascotGreet(stickerDelay == null ? 700 : 1500, promoted && `Promoted to ${promoted.name}!`);
   }
 
   // ---- Mascot: says hello when the menu opens, hops and chats when clicked ----
@@ -169,10 +172,10 @@
     }, ms || 4200);
   }
 
-  function mascotGreet(delay) {
+  function mascotGreet(delay, text) {
     clearTimeout(bubbleTimer);
     bubble.hidden = true;
-    bubbleTimer = setTimeout(() => say(greeting()), delay);
+    bubbleTimer = setTimeout(() => say(text || greeting(), text ? 6000 : 0), delay);
   }
 
   mascot.addEventListener('click', () => {
@@ -192,12 +195,17 @@
 
   // ---- Coffee rank ----
 
-  function renderRankChip() {
+  function renderRankChip(promoted) {
     const rank = CC.Ranks.current();
+    const chip = $('#rank-chip');
     $('#rank-chip-badge').innerHTML = CC.Ranks.badgeHtml(rank);
-    $('#rank-chip-badge').style.setProperty('--rank-color', rank.color);
+    CC.Ranks.paint(chip, rank);
     $('#rank-chip-number').textContent = `Rank ${rank.number} of ${CC.Ranks.total}`;
     $('#rank-chip-name').textContent = rank.name;
+    chip.dataset.rank = rank.id;
+    chip.classList.toggle('promoted', !!promoted);
+    // The mascot's rank extra (e.g. French Roast's beret).
+    $('#mascot-extra').innerHTML = CC.Ranks.mascotHtml(rank);
   }
 
   $('#rank-chip').addEventListener('click', () => showScreen('stats'));
@@ -216,7 +224,7 @@
       })
       .join('');
     return `
-      <section class="sp-rank" style="--rank-color:${current.color}">
+      <section class="sp-rank" data-rank="${current.id}" style="--rank-color:${current.color};--rank-accent:${current.accent}">
         <div class="rank-seal">${CC.Ranks.badgeHtml(current)}</div>
         <div class="rank-info">
           <span class="rank-kicker">Your rank · ${current.number} of ${CC.Ranks.total}</span>
@@ -428,7 +436,7 @@
     promo.hidden = !result.promotion;
     if (result.promotion) {
       const r = result.promotion;
-      promo.style.setProperty('--rank-color', r.color);
+      CC.Ranks.paint(promo, r);
       promo.innerHTML = `<span class="rank-badge">${CC.Ranks.badgeHtml(r)}</span><span><small>Promoted!</small><b>${r.name}</b></span>`;
     }
     const note = $('#complete-note');

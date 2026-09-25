@@ -43,7 +43,14 @@ To add more songs, drop the files into `assets/music/` and add their names to `a
 
 ## Ranks
 
-Players climb a ladder of 10 coffee ranks by completing numbered levels. Everyone starts at **House Blend** ("Fresh off the press."). The current rank shows on the main menu and the Stats page, and a promotion appears on the level-complete card. All rank data lives in `RANKS` in `js/ranks.js`. Ranks 2–10 are listed there but not yet playable.
+Players climb a ladder of 10 coffee ranks by completing numbered levels. The current rank shows on the main menu and the Stats page. A promotion appears on the level-complete card, or on the menu when a save already qualifies. Some ranks also give the menu mascot a small extra.
+
+| Rank | Name | Reached after | Motto | Mascot extra |
+| --- | --- | --- | --- | --- |
+| 1 | House Blend | start | Fresh off the press. | none |
+| 2 | French Roast | 5 levels | Bold enough for the morning edition. | a black beret |
+
+All rank data lives in `RANKS` in `js/ranks.js`, with badge art in `BADGES` and mascot extras in `MASCOT_EXTRAS`. Ranks 3–10 are listed there but not yet playable.
 
 ## Today's Paper
 
