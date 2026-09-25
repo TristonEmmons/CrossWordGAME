@@ -32,6 +32,7 @@ To add more songs, drop the files into `assets/music/` and add their names to `a
 | `js/audio.js` | Music playlist/looping/crossfade, mute and volume, synthesized sound effects |
 | `js/effects.js` | Canvas confetti and toasts |
 | `js/ranks.js` | Coffee ranks: the 10-rank ladder, badge art, and rank-up checks |
+| `js/menuscene.js` | Main-menu backdrop: a café-patio street scene (shops, traffic, people, awning and string lights) that follows the time of day, behind frosted glass |
 | `js/stickers.js` | Main-menu star sticker pile and its fly-in animation |
 | `js/newspaper.js` | The newspaper page around the puzzle: paper and desk textures, masthead dateline, and the news columns that fill the margins |
 | `js/levelmap.js` | The world map: chapter worlds (sky, sun, three layers of hills with a print-dot texture, grass, animated critters), landmarks, signposts with chapter progress, fog over far chapters, the cobbled road, level coins, rank flags and the mascot |

@@ -126,6 +126,7 @@
     const started = next > 1 || Save.progress.inProgress[1];
     $('#start-sub').textContent = started ? `Continue · Level ${next}` : 'Level 1';
     renderDailyButton();
+    CC.MenuScene.refresh();
     // A rank earned outside a level finish (e.g. a save from before that rank existed)
     // is celebrated here instead, once.
     const promoted = CC.Ranks.checkPromotion();

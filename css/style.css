@@ -282,6 +282,180 @@ code {
   }
 }
 
+/* ---------- Main-menu backdrop: café-patio street scene behind frosted glass ---------- */
+
+.menu-scene {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition: opacity 0.4s ease, visibility 0s;
+}
+
+.ms-view,
+.ms-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Only on the main menu: elsewhere it's hidden (not painted) and paused. */
+body:not([data-screen='menu']) .menu-scene {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+}
+
+body:not([data-screen='menu']) .menu-scene * {
+  animation-play-state: paused;
+}
+
+/* Frosted glass. The blur comes from the scene itself: the still layer is an image with
+   the blur baked in, and each moving piece is blurred on its own, far cheaper than a
+   live full-screen backdrop blur. This pane then lightens it all to
+   paper tone with a faint frost grain and a sheen, so the menu stays easy to read. */
+.ms-still {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 100%;
+}
+
+.ms-moving {
+  will-change: transform;
+}
+
+.ms-blur {
+  filter: blur(4px);
+}
+
+.tod-evening .ms-shaded { filter: blur(4px) brightness(0.9); }
+.tod-night .ms-shaded { filter: blur(4px) brightness(0.68) saturate(0.85); }
+
+.menu-frost {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 38%, rgba(255, 255, 255, 0.14) 62%, rgba(255, 255, 255, 0) 80%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse at 50% 42%, rgba(255, 250, 242, 0.62), rgba(255, 248, 238, 0.4) 70%);
+  box-shadow: inset 0 0 140px rgba(255, 255, 255, 0.45);
+}
+
+/* Time-of-day palettes */
+.ms-svg { --sky1: #9fd8f0; --sky2: #e6f6fb; --city: #c7d7e2; --road: #6b6770; --walk: #e9dfd2; --sun: #ffe08a; --win: #dcecf5; --tint: transparent; }
+.ms-svg.tod-morning { --sky1: #ffc9a0; --sky2: #fff1dc; --city: #e8cdb8; --sun: #ffd07a; --tint: rgba(255, 190, 120, 0.08); }
+.ms-svg.tod-evening { --sky1: #f08a6b; --sky2: #ffd29a; --city: #b98f9a; --road: #5c5663; --sun: #ffb35e; --win: #f3d6b8; --tint: rgba(120, 60, 110, 0.14); }
+.ms-svg.tod-night { --sky1: #1f2550; --sky2: #3d4378; --city: #2c3160; --road: #3a3844; --walk: #8f8aa0; --sun: #fdf1c0; --win: #5a6090; --tint: rgba(20, 24, 60, 0.38); }
+
+.ms-sky1 { stop-color: var(--sky1); }
+.ms-sky2 { stop-color: var(--sky2); }
+.ms-sun { fill: var(--sun); }
+.ms-moonbite { fill: var(--sky1); }
+.ms-city { fill: var(--city); stroke: rgba(43, 42, 51, 0.15); stroke-width: 3; }
+.ms-citywin { fill: rgba(255, 255, 255, 0.5); }
+.tod-night .ms-citywin,
+.tod-evening .ms-citywin { fill: #ffd86b; }
+.ms-win { fill: var(--win); }
+.ms-road { fill: var(--road); }
+.ms-walk { fill: var(--walk); }
+.ms-tint { fill: var(--tint); }
+.ms-beam { opacity: 0; }
+.tod-night .ms-beam { opacity: 0.45; }
+.tod-evening .ms-beam { opacity: 0.25; }
+.ms-lampglow { opacity: 0.45; }
+.ms-bulb { fill: #fff3b0; stroke: #2b2a33; stroke-width: 2.5; }
+.tod-night .ms-bulb,
+.tod-evening .ms-bulb {
+  fill: #ffe27a;
+  filter: drop-shadow(0 0 6px #ffd35e);
+  animation: ms-twinkle 3s ease-in-out infinite;
+}
+
+/* Motion */
+.ms-car,
+.ms-walker,
+.ms-bird {
+  animation: ms-cross var(--d) linear var(--delay) infinite;
+}
+
+.ms-car.left,
+.ms-walker.left {
+  animation-name: ms-cross-back;
+}
+
+.ms-wheel {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ms-spin 0.5s linear infinite;
+}
+
+.ms-bounce {
+  animation: ms-bounce 0.35s ease-in-out infinite alternate;
+}
+
+.ms-step {
+  animation: ms-bounce 0.4s ease-in-out infinite alternate;
+}
+
+.ms-leg {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: ms-legs 0.8s ease-in-out infinite alternate;
+}
+
+.ms-leg.b {
+  animation-direction: alternate-reverse;
+}
+
+.ms-wingbeat {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ms-flap 0.45s ease-in-out infinite alternate;
+}
+
+.ms-steam {
+  animation: ms-steam 2.6s ease-in-out infinite;
+}
+
+.ms-steam.two {
+  animation-delay: -1.3s;
+}
+
+.ms-tl { fill: #3a3844; }
+.ms-tl.r { animation: ms-light-r 12s steps(1) infinite; }
+.ms-tl.y { animation: ms-light-y 12s steps(1) infinite; }
+.ms-tl.g { animation: ms-light-g 12s steps(1) infinite; }
+
+@keyframes ms-cross { from { transform: translateX(-460px); } to { transform: translateX(2060px); } }
+@keyframes ms-cross-back { from { transform: translateX(2060px); } to { transform: translateX(-460px); } }
+@keyframes ms-spin { to { transform: rotate(360deg); } }
+@keyframes ms-bounce { from { transform: translateY(0); } to { transform: translateY(-2px); } }
+@keyframes ms-legs { from { transform: rotate(-18deg); } to { transform: rotate(18deg); } }
+@keyframes ms-flap { from { transform: scaleY(1); } to { transform: scaleY(-0.4); } }
+@keyframes ms-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+@keyframes ms-steam { 0% { opacity: 0; transform: translateY(8px); } 40% { opacity: 0.9; } 100% { opacity: 0; transform: translateY(-14px); } }
+@keyframes ms-light-r { 0% { fill: #e0474f; } 50% { fill: #3a3844; } }
+@keyframes ms-light-y { 0% { fill: #3a3844; } 88% { fill: #ffc145; } }
+@keyframes ms-light-g { 0% { fill: #3a3844; } 50% { fill: #4fc36a; } 88% { fill: #3a3844; } }
+
+/* Reduced motion: freeze the street mid-bustle rather than emptying it. */
+@media (prefers-reduced-motion: reduce) {
+  .menu-scene * {
+    animation-duration: var(--d, 1s) !important;
+    animation-iteration-count: infinite !important;
+    animation-play-state: paused !important;
+  }
+}
+
+body.high-contrast .menu-scene {
+  display: none;
+}
+
 /* ---------- Screens ---------- */
 
 #app {
