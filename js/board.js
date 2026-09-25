@@ -547,6 +547,21 @@
 
   coffeeBtn.addEventListener('click', useCoffee);
 
+  // Mouse hover makes the cup hop off its saucer; leaving drops it back down.
+  coffeeBtn.addEventListener('pointerenter', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    coffeeBtn.classList.remove('landing');
+    coffeeBtn.classList.add('lifted');
+  });
+  coffeeBtn.addEventListener('pointerleave', () => {
+    if (!coffeeBtn.classList.contains('lifted')) return;
+    coffeeBtn.classList.remove('lifted');
+    coffeeBtn.classList.add('landing');
+  });
+  coffeeBtn.addEventListener('animationend', (e) => {
+    if (e.animationName === 'cup-land') coffeeBtn.classList.remove('landing');
+  });
+
   // ---- Level complete ----
 
   function finish() {

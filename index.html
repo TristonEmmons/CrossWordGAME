@@ -22,9 +22,11 @@
         <stop offset="0" stop-color="#7b4524"/>
         <stop offset="1" stop-color="#4a2812"/>
       </radialGradient>
-      <symbol id="coffee-cup" viewBox="0 0 64 64">
+      <symbol id="coffee-saucer" viewBox="0 0 64 64">
         <ellipse cx="31" cy="54" rx="25" ry="6.5" fill="#fbf5ec" stroke="#d8c6ae" stroke-width="1.5"/>
         <ellipse cx="31" cy="53" rx="15" ry="3.4" fill="#efe3d1"/>
+      </symbol>
+      <symbol id="coffee-mug" viewBox="0 0 64 64">
         <path d="M46 31 C58 29.5 58 45.5 43.5 44.5" fill="none" stroke="#d9493a" stroke-width="5" stroke-linecap="round"/>
         <path d="M12 25 L50 25 C50 36 47 47 38.5 51 L23.5 51 C15 47 12 36 12 25 Z" fill="url(#cup-body)"/>
         <path d="M17 30.5 C17 38 19 43.5 22.5 47" fill="none" stroke="#fff" stroke-opacity="0.5" stroke-width="2.4" stroke-linecap="round"/>
@@ -34,6 +36,10 @@
           <ellipse cx="31" cy="25.8" rx="12.5" ry="2.8" fill="#9a6036" opacity="0.8"/>
           <path d="M31 27.4 C28 25.9 27.6 24.3 29.3 24 C30.3 23.9 30.8 24.5 31 25 C31.2 24.5 31.7 23.9 32.7 24 C34.4 24.3 34 25.9 31 27.4 Z" fill="#f3d6b0"/>
         </g>
+      </symbol>
+      <symbol id="coffee-cup" viewBox="0 0 64 64">
+        <use href="#coffee-saucer"/>
+        <use href="#coffee-mug"/>
       </symbol>
     </defs>
   </svg>
@@ -120,12 +126,18 @@
           </div>
           <button class="coffee-btn" id="coffee-btn" aria-label="Drink a coffee to find a random word">
             <svg viewBox="0 0 64 64" aria-hidden="true">
-              <g class="steam">
-                <path d="M24 19 C21 15 27 12 24 7"/>
-                <path d="M31 18 C28 14 34 10 31 4"/>
-                <path d="M38 19 C35 15 41 12 38 7"/>
+              <use class="saucer" href="#coffee-saucer"/>
+              <ellipse class="cup-shadow" cx="31" cy="51.5" rx="12" ry="2.4"/>
+              <g class="cup-lift">
+                <g class="cup-sip">
+                  <g class="steam">
+                    <path d="M24 19 C21 15 27 12 24 7"/>
+                    <path d="M31 18 C28 14 34 10 31 4"/>
+                    <path d="M38 19 C35 15 41 12 38 7"/>
+                  </g>
+                  <use href="#coffee-mug"/>
+                </g>
               </g>
-              <use href="#coffee-cup"/>
             </svg>
             <span class="coffee-count" id="coffee-count">3</span>
           </button>

@@ -997,14 +997,74 @@ body.high-contrast .capsule.found {
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s;
 }
 
-.coffee-btn:hover svg {
-  transform: translateY(-4px) rotate(-7deg);
-  filter: drop-shadow(0 9px 6px rgba(70, 45, 20, 0.22));
+.coffee-btn:active svg {
+  transform: translateY(1px) scale(0.96);
 }
 
-.coffee-btn:active svg {
-  transform: translateY(1px) scale(0.94);
-  filter: drop-shadow(0 2px 2px rgba(70, 45, 20, 0.3));
+/* Hover: the cup crouches, hops off its saucer and floats; on leave it drops back
+   onto the plate with a squish. Origins are in the SVG's 64x64 units (cup base). */
+.cup-lift,
+.cup-sip,
+.saucer,
+.cup-shadow {
+  transform-box: view-box;
+  transform-origin: 31px 51px;
+}
+
+.saucer {
+  transform-origin: 31px 54px;
+}
+
+.cup-shadow {
+  fill: rgba(70, 40, 15, 0.28);
+  transition: transform 0.35s ease, opacity 0.35s ease;
+}
+
+.coffee-btn.lifted .cup-lift {
+  animation:
+    cup-hop 0.6s cubic-bezier(0.3, 0.7, 0.4, 1) forwards,
+    cup-float 1.5s 0.6s ease-in-out infinite alternate;
+}
+
+.coffee-btn.lifted .cup-shadow {
+  transform: scale(0.7);
+  opacity: 0.45;
+}
+
+.coffee-btn.landing .cup-lift {
+  animation: cup-land 0.5s ease-out both;
+}
+
+.coffee-btn.landing .saucer {
+  animation: saucer-clink 0.5s ease-out both;
+}
+
+@keyframes cup-hop {
+  0% { transform: none; }
+  18% { transform: translateY(1px) scale(1.07, 0.88); }
+  50% { transform: translateY(-15px) rotate(-7deg) scale(0.95, 1.07); }
+  75% { transform: translateY(-9px) rotate(-4deg) scale(1.02, 0.98); }
+  100% { transform: translateY(-11px) rotate(-5deg); }
+}
+
+@keyframes cup-float {
+  from { transform: translateY(-11px) rotate(-5deg); }
+  to { transform: translateY(-8px) rotate(-2deg); }
+}
+
+@keyframes cup-land {
+  0% { transform: translateY(-10px) rotate(-4deg); }
+  45% { transform: translateY(0) rotate(0) scale(1); }
+  60% { transform: translateY(0.5px) scale(1.08, 0.88); }
+  80% { transform: translateY(-2px) scale(0.98, 1.04); }
+  100% { transform: none; }
+}
+
+@keyframes saucer-clink {
+  0%, 42% { transform: none; }
+  58% { transform: scale(1.05, 0.9); }
+  80% { transform: scale(0.99, 1.03); }
+  100% { transform: none; }
 }
 
 .coffee-btn:focus-visible {
@@ -1031,14 +1091,14 @@ body.high-contrast .capsule.found {
   100% { opacity: 0; transform: translateY(-6px) scaleY(1.1); }
 }
 
-.coffee-btn.sipping svg {
+.coffee-btn.sipping .cup-sip {
   animation: sip 0.6s ease both;
 }
 
 @keyframes sip {
   0% { transform: none; }
-  35% { transform: translateY(-6px) rotate(-24deg) scale(1.1); }
-  65% { transform: translateY(-6px) rotate(-24deg) scale(1.1); }
+  35% { transform: translateY(-4px) rotate(-24deg) scale(1.08); }
+  65% { transform: translateY(-4px) rotate(-24deg) scale(1.08); }
   100% { transform: none; }
 }
 
