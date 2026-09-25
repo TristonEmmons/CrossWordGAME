@@ -11,7 +11,7 @@
   const STREAK_WINDOW_MS = 15000;
   const REVEAL_MS = 5000;
   const FOUND_TINTS = 4; // number of capsule colour variants in CSS
-  const COFFEE_CLEARANCE = 84; // px kept free in the board box's corner for the coffee button
+  const COFFEE_CLEARANCE = 96; // px kept free in the board box's corner for the coffee button
 
   const wrap = document.getElementById('board-wrap');
   const board = document.getElementById('board');
