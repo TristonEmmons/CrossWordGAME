@@ -88,6 +88,27 @@
       <path d="M22 21 C26 18 30 23 34 19 C37 16 41 20 44 18" fill="none" stroke="#4a2618" stroke-width="2.4" stroke-linecap="round"/>
       <path d="M34 11 L36 7 M31 12 L30 8 M38 13 L41 10" stroke="#4a2618" stroke-width="2.2" stroke-linecap="round"/>
     </svg>`,
+
+    // Vienna Roast: a gold-rimmed porcelain cup on a silver tray with a glass of water,
+    // the way Vienna's coffee houses serve it, beside a newspaper on a wooden holder.
+    viennaRoast: `<svg viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M44 6 V36" stroke="#8a5a3b" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M44 8 H60 V30 H44 Z" fill="#fffaf1" stroke="#2b2a33" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M47 12.5 H57" stroke="#2b2a33" stroke-width="2.4"/>
+      <path d="M47 17 H57 M47 20.5 H57 M47 24 H54" stroke="#9c9489" stroke-width="1.3"/>
+      <path d="M4 50 H56 L53 55 H7 Z" fill="#dfe2e6" stroke="#2b2a33" stroke-width="2.6" stroke-linejoin="round"/>
+      <path d="M44 34 H53 L52 49 H45 Z" fill="#e8f3f6" stroke="#2b2a33" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M45.4 40 H51.6" stroke="#9fc9d6" stroke-width="2"/>
+      <ellipse cx="23" cy="48" rx="16" ry="3.6" fill="#fffaf1" stroke="#2b2a33" stroke-width="2.6"/>
+      <path d="M35 30 C43 29 43 41 33 40" fill="none" stroke="#2b2a33" stroke-width="3" stroke-linecap="round"/>
+      <path d="M35 30 C40 30 40 38 33 38" fill="none" stroke="#fffaf1" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M9 26 H37 L35 38 A8 8 0 0 1 27 45 H19 A8 8 0 0 1 11 38 Z" fill="#fffaf1" stroke="#2b2a33" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M10.5 31 H35.7" stroke="#e0b44c" stroke-width="2"/>
+      <path d="M14 35 C17 37 20 33 23 35 C26 37 29 33 32 35" fill="none" stroke="#6b1f2a" stroke-width="1.4" stroke-linecap="round"/>
+      <ellipse cx="23" cy="26" rx="14" ry="3.6" fill="#3a1f12" stroke="#e0b44c" stroke-width="2.6"/>
+      <ellipse cx="20" cy="25.5" rx="4.5" ry="1" fill="#6b3f1f"/>
+      <path d="M21 20 C18 16 24 13 21 9" fill="none" stroke="#8a7560" stroke-width="2.6" stroke-linecap="round"/>
+    </svg>`,
   };
 
   // Small extras worn by the menu mascot. A rank lists the extras it wears in `mascot`;
@@ -130,6 +151,13 @@
         <ellipse cx="350" cy="62" rx="13" ry="6" fill="#3a1d10" stroke="#2b2a33" stroke-width="4"/>
         <ellipse cx="350" cy="62" rx="6" ry="2.6" fill="#d9b48a"/>
       </g>`,
+
+    // A gold monocle on a fine chain over the cup's right eye.
+    monocle: `
+      <path d="M338 330 C352 366 344 398 372 418 C388 430 398 424 404 412" fill="none" stroke="#c9962c" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="2 7"/>
+      <circle cx="310" cy="306" r="34" fill="rgba(220, 238, 245, 0.28)" stroke="#2b2a33" stroke-width="10"/>
+      <circle cx="310" cy="306" r="34" fill="none" stroke="#e0b44c" stroke-width="6"/>
+      <path d="M288 290 C294 282 302 279 310 279" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity="0.85"/>`,
   };
 
   // The full ladder. `levels` is how many numbered levels must be completed to reach
@@ -202,7 +230,19 @@
       milestone: 'Halfway there',
       ready: true,
     },
-    { id: 'vienna-roast', number: 6, name: 'Vienna Roast', ready: false },
+    {
+      id: 'vienna-roast',
+      number: 6,
+      name: 'Vienna Roast',
+      description: 'A refined puzzle solver.',
+      levels: 25,
+      badge: 'viennaRoast',
+      color: '#6b1f2a',
+      accent: '#f3e6c8',
+      trim: '#e0b44c',
+      mascot: ['beret', 'beanPin', 'paper', 'wafer', 'monocle'],
+      ready: true,
+    },
     { id: 'kona-reserve', number: 7, name: 'Kona Reserve', ready: false },
     { id: 'geisha-reserve', number: 8, name: 'Geisha Reserve', ready: false },
     { id: 'black-label', number: 9, name: 'Black Label', ready: false },
