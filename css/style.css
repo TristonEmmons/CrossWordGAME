@@ -3901,6 +3901,31 @@ body.high-contrast #screen-stats {
   to { opacity: 0.85; transform: rotate(-4deg) scale(1); }
 }
 
+/* Reserve tier (ranks with `tier: 'reserve'`): gold-foil edging on the menu chip and the
+   stats rank panel. Kept to borders and paper tone so nothing competes with the puzzle. */
+.rank-chip[data-tier='reserve'] {
+  background: linear-gradient(135deg, #fffaf0, #f4e3b8);
+  box-shadow: 0 3px 0 var(--news-ink), inset 0 0 0 2px #fffaf0, inset 0 0 0 3.5px #c9962c;
+}
+
+.rank-chip[data-tier='reserve']:hover {
+  box-shadow: 0 5px 0 var(--news-ink), inset 0 0 0 2px #fffaf0, inset 0 0 0 3.5px #c9962c;
+}
+
+.rank-chip[data-tier='reserve'] .rank-chip-text small,
+.sp-rank[data-tier='reserve'] .rank-kicker {
+  color: #9a6a12;
+}
+
+.sp-rank[data-tier='reserve'] {
+  background: linear-gradient(135deg, #fdf7e6, #f3e2b9);
+  box-shadow: 4px 4px 0 var(--news-ink), inset 0 0 0 4px #fdf7e6, inset 0 0 0 6px #c9962c;
+}
+
+.rank-tier {
+  font-style: normal;
+}
+
 /* Menu rank chip: a little celebration the first time a new rank shows up */
 .rank-chip.promoted {
   animation: fade-up 0.5s 0.5s ease both, rank-chip-cheer 0.9s 1.1s cubic-bezier(0.34, 1.7, 0.64, 1) 2;

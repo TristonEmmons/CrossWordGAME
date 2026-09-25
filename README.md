@@ -53,8 +53,9 @@ Players climb a ladder of 10 coffee ranks by completing numbered levels. The cur
 | 4 | Cappuccino | 15 levels | A seasoned solver with good taste. | + a folded morning paper by the saucer |
 | 5 | Café Mocha ★ | 20 levels | Halfway to becoming a legend. | + a chocolate wafer in the coffee |
 | 6 | Vienna Roast | 25 levels | A refined puzzle solver. | + a gold monocle |
+| 7 | Kona Reserve ◆ | 30 levels | Premium puzzle-solving territory. | + a gilded rim on the cup |
 
-All rank data lives in `RANKS` in `js/ranks.js`, with badge art in `BADGES` and mascot extras in `MASCOT_EXTRAS`. Ranks 7–10 are listed there but not yet playable.
+All rank data lives in `RANKS` in `js/ranks.js`, with badge art in `BADGES` and mascot extras in `MASCOT_EXTRAS`. Ranks 8–10 are listed there but not yet playable. Ranks with `tier: 'reserve'` (◆) get gold-foil edging on the menu rank chip and the Stats rank panel.
 
 Every rank-up plays a fanfare and bursts confetti in the rank's colours. Ranks with a `milestone` label (★) get the special-edition version: an "Extra! Extra!" headline with a stamp, the rank's motto, a gold shine, gold stars and a longer fanfare. Ranks are earned strictly in order: the lookup climbs the ladder and stops at the first rank that isn't built or earned.
 

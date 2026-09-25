@@ -1,7 +1,7 @@
 /* Coffee ranks: the player's progression title, earned by completing numbered levels.
    All rank data lives in RANKS below; everything else asks CC.Ranks. To add a rank,
    fill in its entry (`ready: true`, `levels`, `description`, `badge`, `color`,
-   `accent`, and optionally `trim`, `mascot` and `milestone`) and add its artwork to BADGES / MASCOT_EXTRAS. */
+   `accent`, and optionally `trim`, `tier`, `mascot` and `milestone`) and add its artwork to BADGES / MASCOT_EXTRAS. */
 (function () {
   'use strict';
 
@@ -109,6 +109,29 @@
       <ellipse cx="20" cy="25.5" rx="4.5" ry="1" fill="#6b3f1f"/>
       <path d="M21 20 C18 16 24 13 21 9" fill="none" stroke="#8a7560" stroke-width="2.6" stroke-linecap="round"/>
     </svg>`,
+
+    // Kona Reserve: a black cup with gold bands on a gold saucer, beside a sprig of ripe
+    // coffee cherries from Kona's volcanic slopes, over a "Reserve" ribbon.
+    konaReserve: `<svg viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M4 30 C6 22 10 17 15 14" fill="none" stroke="#3f6b3a" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M8 20 C3 19 2 14 5 12 C8 14 9 17 8 20 Z" fill="#5f8f4e" stroke="#2b2a33" stroke-width="1.4"/>
+      <path d="M13 15 C12 10 16 7 19 8 C19 12 16 15 13 15 Z" fill="#5f8f4e" stroke="#2b2a33" stroke-width="1.4"/>
+      <circle cx="6" cy="27" r="2.6" fill="#c8323b" stroke="#2b2a33" stroke-width="1.3"/>
+      <circle cx="10" cy="25" r="2.6" fill="#e0474f" stroke="#2b2a33" stroke-width="1.3"/>
+      <circle cx="8.5" cy="30.5" r="2.4" fill="#a8252e" stroke="#2b2a33" stroke-width="1.3"/>
+      <ellipse cx="34" cy="46" rx="21" ry="4.6" fill="#e0b44c" stroke="#2b2a33" stroke-width="2.8"/>
+      <path d="M48 24 C58 23 58 38 46 37" fill="none" stroke="#2b2a33" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M48 24 C55 24 55 35 46 35" fill="none" stroke="#e0b44c" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M18 19 H50 L48 34 A9 9 0 0 1 39 43 H29 A9 9 0 0 1 20 34 Z" fill="#1f1d24" stroke="#2b2a33" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M19.3 25 H49.2" stroke="#e0b44c" stroke-width="2.4"/>
+      <path d="M19.8 28.5 H48.7" stroke="#e0b44c" stroke-width="1"/>
+      <path d="M24 31 V37" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+      <ellipse cx="34" cy="19" rx="16" ry="4" fill="#3a1f12" stroke="#e0b44c" stroke-width="2.6"/>
+      <path d="M30 13 C27 9 33 7 30 3 M38 13 C35 9 41 7 38 3" fill="none" stroke="#8a7560" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M4 50 L10 51 L8 55 L12 60 L3 58 Z M60 50 L54 51 L56 55 L52 60 L61 58 Z" fill="#8a1f2a" stroke="#2b2a33" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M9 50 C20 54 44 54 55 50 L56 58 C44 62 20 62 8 58 Z" fill="#b8323d" stroke="#2b2a33" stroke-width="2" stroke-linejoin="round"/>
+      <text x="32" y="58.6" text-anchor="middle" font-family="Georgia, serif" font-size="6" font-weight="700" letter-spacing="0.9" fill="#fff1bf">RESERVE</text>
+    </svg>`,
   };
 
   // Small extras worn by the menu mascot. A rank lists the extras it wears in `mascot`;
@@ -158,6 +181,12 @@
       <circle cx="310" cy="306" r="34" fill="rgba(220, 238, 245, 0.28)" stroke="#2b2a33" stroke-width="10"/>
       <circle cx="310" cy="306" r="34" fill="none" stroke="#e0b44c" stroke-width="6"/>
       <path d="M288 290 C294 282 302 279 310 279" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity="0.85"/>`,
+
+    // Gilding: a thin gold line painted around the cup's rim.
+    gildedRim: `
+      <ellipse cx="243" cy="190" rx="171" ry="42" fill="none" stroke="#2b2a33" stroke-width="11" opacity="0.25"/>
+      <ellipse cx="243" cy="190" rx="171" ry="42" fill="none" stroke="#e0b44c" stroke-width="7"/>
+      <path d="M130 158 C170 150 210 148 246 148" fill="none" stroke="#fff4cf" stroke-width="3.5" stroke-linecap="round"/>`,
   };
 
   // The full ladder. `levels` is how many numbered levels must be completed to reach
@@ -243,7 +272,21 @@
       mascot: ['beret', 'beanPin', 'paper', 'wafer', 'monocle'],
       ready: true,
     },
-    { id: 'kona-reserve', number: 7, name: 'Kona Reserve', ready: false },
+    {
+      id: 'kona-reserve',
+      number: 7,
+      name: 'Kona Reserve',
+      description: 'Premium puzzle-solving territory.',
+      levels: 30,
+      badge: 'konaReserve',
+      color: '#1f1d24',
+      accent: '#e0b44c',
+      trim: '#fff1bf',
+      // The reserve tier: gold-foil edging on the menu chip and the stats rank panel.
+      tier: 'reserve',
+      mascot: ['gildedRim', 'beret', 'beanPin', 'paper', 'wafer', 'monocle'],
+      ready: true,
+    },
     { id: 'geisha-reserve', number: 8, name: 'Geisha Reserve', ready: false },
     { id: 'black-label', number: 9, name: 'Black Label', ready: false },
     { id: 'daily-legend', number: 10, name: 'The Daily Legend', ready: false },

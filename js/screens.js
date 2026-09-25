@@ -203,6 +203,7 @@
     $('#rank-chip-number').textContent = `Rank ${rank.number} of ${CC.Ranks.total}`;
     $('#rank-chip-name').textContent = rank.name;
     chip.dataset.rank = rank.id;
+    chip.dataset.tier = rank.tier || '';
     chip.classList.toggle('promoted', !!promoted);
     if (promoted) rankUpFanfare(promoted, $('#rank-chip-badge'), 1100);
     // The mascot's rank extras (e.g. French Roast's beret).
@@ -250,10 +251,10 @@
       })
       .join('');
     return `
-      <section class="sp-rank" data-rank="${current.id}" style="${CC.Ranks.styleAttr(current)}">
+      <section class="sp-rank" data-rank="${current.id}" data-tier="${current.tier || ''}" style="${CC.Ranks.styleAttr(current)}">
         <div class="rank-seal">${CC.Ranks.badgeHtml(current)}</div>
         <div class="rank-info">
-          <span class="rank-kicker">Your rank · ${current.number} of ${CC.Ranks.total}</span>
+          <span class="rank-kicker">Your rank · ${current.number} of ${CC.Ranks.total}${current.tier ? ` · <em class="rank-tier">${current.tier} tier</em>` : ''}</span>
           <h4>${current.name}</h4>
           <p class="rank-motto">“${current.description}”</p>
           <div class="rank-bar"><span style="transform:scaleX(${fraction})"></span></div>
