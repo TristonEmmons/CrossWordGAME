@@ -1,7 +1,7 @@
 /* Coffee ranks: the player's progression title, earned by completing numbered levels.
    All rank data lives in RANKS below; everything else asks CC.Ranks. To add a rank,
    fill in its entry (`ready: true`, `levels`, `description`, `badge`, `color`,
-   `accent`, and optionally `mascot`) and add its artwork to BADGES / MASCOT_EXTRAS. */
+   `accent`, and optionally `trim` and `mascot`) and add its artwork to BADGES / MASCOT_EXTRAS. */
 (function () {
   'use strict';
 
@@ -38,20 +38,43 @@
       <ellipse cx="28" cy="21.3" rx="6" ry="1.4" fill="#4a2a17"/>
       <path d="M19 40 V47" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity="0.45"/>
     </svg>`,
+
+    // Espresso: a small demitasse on a saucer with a golden crema top and speed streaks
+    // off the left side. Compact, sharp and quick.
+    espresso: `<svg viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M3 30 H11 M1 37 H10 M4 44 H11" stroke="#2b2a33" stroke-width="3" stroke-linecap="round"/>
+      <path d="M31 19 C28 15 34 12 31 7" fill="none" stroke="#8a7560" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M44 30 C53 29 53 42 42 41" fill="none" stroke="#2b2a33" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M44 30 C50 30 50 39 42 39" fill="none" stroke="#fffaf1" stroke-width="2.6" stroke-linecap="round"/>
+      <ellipse cx="31" cy="52" rx="23" ry="5" fill="#fffaf1" stroke="#2b2a33" stroke-width="3"/>
+      <path d="M17 25 H45 V40 A9 9 0 0 1 36 49 H26 A9 9 0 0 1 17 40 Z" fill="#fffaf1" stroke="#2b2a33" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M17 31 H45" stroke="#1f130c" stroke-width="3"/>
+      <ellipse cx="31" cy="25" rx="14" ry="4" fill="#d8a35a" stroke="#2b2a33" stroke-width="3"/>
+      <path d="M24 24.6 C28 23.4 33 26.4 38 24.4" fill="none" stroke="#f3d39a" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M21 35 V41" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+    </svg>`,
   };
 
-  // Small extras worn by the menu mascot at some ranks. Each is drawn over the mascot
-  // picture on the same 512x512 canvas, so it bobs and hops along with the cup.
+  // Small extras worn by the menu mascot. A rank lists the extras it wears in `mascot`;
+  // each is SVG content on the mascot picture's own 512x512 canvas, so it lines up with
+  // the cup and bobs and hops along with it.
   const MASCOT_EXTRAS = {
     // A black beret tipped over the cup's left rim, leaving the heart and steam visible.
-    beret: `<svg viewBox="0 0 512 512" aria-hidden="true">
+    beret: `
       <g transform="rotate(-14 170 160)">
         <ellipse cx="178" cy="174" rx="64" ry="13" fill="#1e1b22"/>
         <path d="M68 150 C66 118 132 102 184 104 C246 106 284 126 276 150 C268 172 212 180 170 178 C120 176 70 172 68 150 Z" fill="#2b2a33" stroke="#1e1b22" stroke-width="6" stroke-linejoin="round"/>
         <path d="M98 132 C124 118 156 114 188 115" fill="none" stroke="#5b5866" stroke-width="7" stroke-linecap="round"/>
         <path d="M180 106 C178 94 184 86 193 85" fill="none" stroke="#2b2a33" stroke-width="9" stroke-linecap="round"/>
-      </g>
-    </svg>`,
+      </g>`,
+
+    // A gold coffee-bean pin on the front of the beret.
+    beanPin: `
+      <g transform="rotate(-14 170 160) rotate(-30 118 150)">
+        <ellipse cx="118" cy="150" rx="15" ry="21" fill="#e0b44c" stroke="#1e1b22" stroke-width="5"/>
+        <path d="M118 131 C109 142 127 158 118 169" fill="none" stroke="#1e1b22" stroke-width="4.5" stroke-linecap="round"/>
+        <ellipse cx="112" cy="141" rx="3.5" ry="6" fill="#fff4cf" opacity="0.9"/>
+      </g>`,
   };
 
   // The full ladder. `levels` is how many numbered levels must be completed to reach
@@ -67,7 +90,7 @@
       badge: 'houseBlend',
       color: '#c98a52',
       accent: '#e8b98a',
-      mascot: null,
+      mascot: [],
       ready: true,
     },
     {
@@ -79,10 +102,22 @@
       badge: 'frenchRoast',
       color: '#5a3320',
       accent: '#e0b44c',
-      mascot: 'beret',
+      mascot: ['beret'],
       ready: true,
     },
-    { id: 'espresso', number: 3, name: 'Espresso', ready: false },
+    {
+      id: 'espresso',
+      number: 3,
+      name: 'Espresso',
+      description: 'Small cup. Serious solver.',
+      levels: 10,
+      badge: 'espresso',
+      color: '#1f130c',
+      accent: '#d8a35a',
+      trim: '#e0b44c',
+      mascot: ['beret', 'beanPin'],
+      ready: true,
+    },
     { id: 'cappuccino', number: 4, name: 'Cappuccino', ready: false },
     { id: 'cafe-mocha', number: 5, name: 'Café Mocha', ready: false },
     { id: 'vienna-roast', number: 6, name: 'Vienna Roast', ready: false },
@@ -92,19 +127,19 @@
     { id: 'daily-legend', number: 10, name: 'The Daily Legend', ready: false },
   ];
 
-  const playable = () => RANKS.filter((r) => r.ready);
-
   // Numbered levels completed in a row from level 1 (the same count that unlocks levels).
   function levelsCompleted() {
     return Save.nextLevel() - 1;
   }
 
-  // Highest ready rank whose level requirement is met.
+  // Climbs the ladder in order and stops at the first rank that isn't in the game yet or
+  // isn't earned, so a rank can never be passed over.
   function rankFor(levels) {
     let current = RANKS[0];
-    playable().forEach((r) => {
-      if (levels >= r.levels && r.number > current.number) current = r;
-    });
+    for (const r of RANKS.slice(1)) {
+      if (!r.ready || levels < r.levels) break;
+      current = r;
+    }
     return current;
   }
 
@@ -112,15 +147,29 @@
     return BADGES[rank.badge] || BADGES.houseBlend;
   }
 
-  // What the menu mascot wears at this rank ('' for nothing).
+  // What the menu mascot wears at this rank, as one SVG ('' for nothing).
   function mascotHtml(rank) {
-    return MASCOT_EXTRAS[rank.mascot] || '';
+    const parts = (rank.mascot || []).map((k) => MASCOT_EXTRAS[k] || '').join('');
+    return parts ? `<svg viewBox="0 0 512 512" aria-hidden="true">${parts}</svg>` : '';
   }
 
-  // Sets a rank's colors on an element, for the badge ring and anything else themed by rank.
+  // A rank's colors as CSS custom properties, for the badge ring and anything themed by rank.
+  function colors(rank) {
+    return {
+      '--rank-color': rank.color,
+      '--rank-accent': rank.accent || '#e8b98a',
+      '--rank-trim': rank.trim || 'transparent',
+    };
+  }
+
+  // Sets a rank's colors on an element.
   function paint(node, rank) {
-    node.style.setProperty('--rank-color', rank.color);
-    node.style.setProperty('--rank-accent', rank.accent || '#e8b98a');
+    Object.entries(colors(rank)).forEach(([k, v]) => node.style.setProperty(k, v));
+  }
+
+  // The same colors as an inline `style` value, for HTML built as a string.
+  function styleAttr(rank) {
+    return Object.entries(colors(rank)).map(([k, v]) => `${k}:${v}`).join(';');
   }
 
   CC.Ranks = {
@@ -129,6 +178,7 @@
     badgeHtml,
     mascotHtml,
     paint,
+    styleAttr,
 
     current() {
       return rankFor(levelsCompleted());

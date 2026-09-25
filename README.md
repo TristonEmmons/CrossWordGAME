@@ -49,8 +49,9 @@ Players climb a ladder of 10 coffee ranks by completing numbered levels. The cur
 | --- | --- | --- | --- | --- |
 | 1 | House Blend | start | Fresh off the press. | none |
 | 2 | French Roast | 5 levels | Bold enough for the morning edition. | a black beret |
+| 3 | Espresso | 10 levels | Small cup. Serious solver. | + a gold coffee-bean pin on the beret |
 
-All rank data lives in `RANKS` in `js/ranks.js`, with badge art in `BADGES` and mascot extras in `MASCOT_EXTRAS`. Ranks 3–10 are listed there but not yet playable.
+All rank data lives in `RANKS` in `js/ranks.js`, with badge art in `BADGES` and mascot extras in `MASCOT_EXTRAS`. Ranks 4–10 are listed there but not yet playable. Ranks are earned strictly in order: the lookup climbs the ladder and stops at the first rank that isn't built or earned.
 
 ## Today's Paper
 

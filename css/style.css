@@ -328,11 +328,14 @@ code {
 
 #screen-menu {
   align-items: center;
-  justify-content: center;
   overflow-y: auto;
 }
 
+/* Auto margins center the menu when it fits, and let it scroll from the top when a big
+   sticker pile makes it taller than the screen (justify-content: center would cut the top off). */
 .menu-inner {
+  flex-shrink: 0;
+  margin-block: auto;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -3598,7 +3601,7 @@ body.high-contrast #screen-stats {
   border: 2.5px solid var(--news-ink);
   border-radius: 50%;
   background:
-    radial-gradient(circle at 50% 50%, #fffaf1 0 58%, transparent 59%),
+    radial-gradient(circle at 50% 50%, #fffaf1 0 58%, var(--rank-trim, transparent) 59% 64%, transparent 65%),
     repeating-conic-gradient(var(--rank-color, #c98a52) 0 10deg, var(--rank-accent, #e8b98a) 10deg 20deg);
   box-shadow: 2px 2px 0 var(--news-ink);
 }

@@ -224,7 +224,7 @@
       })
       .join('');
     return `
-      <section class="sp-rank" data-rank="${current.id}" style="--rank-color:${current.color};--rank-accent:${current.accent}">
+      <section class="sp-rank" data-rank="${current.id}" style="${CC.Ranks.styleAttr(current)}">
         <div class="rank-seal">${CC.Ranks.badgeHtml(current)}</div>
         <div class="rank-info">
           <span class="rank-kicker">Your rank · ${current.number} of ${CC.Ranks.total}</span>
