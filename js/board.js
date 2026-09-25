@@ -585,34 +585,47 @@
     }, 700);
   }
 
-  // ---- Hidden developer reveal: type "seeall" within 1.5s ----
+  // ---- Hidden developer codes (gameplay only), each typed within 1.5s ----
+  //   seeall: highlight every word for 5 seconds
+  //   addcup: +10 coffee cups
 
-  const SECRET = 'seeall';
   const SECRET_WINDOW_MS = 1500;
-  let secretIndex = 0;
-  let secretStart = 0;
+  const SECRETS = {
+    seeall: () => reveal(),
+    addcup: () => addCups(10),
+  };
+  let keyTrail = []; // recent { key, time }
   let revealTimer = 0;
 
   document.addEventListener('keydown', (e) => {
     if (!puzzle || !CC.Screens.isGameScreen()) {
-      secretIndex = 0;
+      keyTrail = [];
       return;
     }
     const key = (e.key || '').toLowerCase();
+    if (key.length !== 1) return;
     const now = performance.now();
-    if (secretIndex > 0 && now - secretStart > SECRET_WINDOW_MS) secretIndex = 0;
-    if (key === SECRET[secretIndex]) {
-      if (secretIndex === 0) secretStart = now;
-      secretIndex++;
-      if (secretIndex === SECRET.length) {
-        secretIndex = 0;
-        if (now - secretStart <= SECRET_WINDOW_MS) reveal();
-      }
-    } else {
-      secretIndex = key === SECRET[0] ? 1 : 0;
-      secretStart = now;
-    }
+    keyTrail.push({ key, time: now });
+    if (keyTrail.length > 12) keyTrail.shift();
+    const typed = keyTrail.map((k) => k.key).join('');
+    Object.keys(SECRETS).forEach((code) => {
+      if (!typed.endsWith(code)) return;
+      const first = keyTrail[keyTrail.length - code.length];
+      if (now - first.time > SECRET_WINDOW_MS) return;
+      keyTrail = [];
+      SECRETS[code]();
+    });
   });
+
+  function addCups(n) {
+    Save.progress.coffee += n;
+    Save.saveProgress();
+    renderCoffee();
+    coffeeCount.classList.remove('bump');
+    void coffeeCount.offsetWidth;
+    coffeeCount.classList.add('bump');
+    CC.Audio.sfx('coffee');
+  }
 
   function reveal() {
     clearTimeout(revealTimer);
