@@ -38,6 +38,8 @@
       coffeeBrew: 0,
       // Today's Paper results: 'YYYY-MM-DD' -> { stars, time, hints }
       daily: {},
+      // Lifetime counters for the stats page (see initStats for older saves)
+      stats: null,
     };
   }
 
@@ -87,6 +89,28 @@
         if (k.indexOf('daily-') === 0 && k !== today) delete map[k];
       });
     });
+  })();
+
+  // Saves from before the stats page get their counters estimated from what was saved.
+  (function initStats() {
+    if (progress.stats) return;
+    const done = Object.keys(progress.completed);
+    let words = 0;
+    done.forEach((l) => {
+      const rec = progress.levels[l];
+      words += rec && rec.words ? rec.words.length : 0;
+    });
+    Object.values(progress.inProgress).forEach((p) => (words += (p.found || []).length));
+    words += Object.keys(progress.daily).length * 5;
+    const levels = Object.values(progress.completed);
+    progress.stats = {
+      wordsFound: words,
+      bonusFound: levels.filter((c) => c.stars >= 4).length,
+      hintsUsed: levels.reduce((sum, c) => sum + (c.hints || 0), 0),
+      coffeeUsed: 0,
+      playMs: levels.reduce((sum, c) => sum + (c.bestTime || 0), 0),
+      bestStreak: 0,
+    };
   })();
 
   CC.Save = {
@@ -193,8 +217,10 @@
         : { stars, time, hints };
       delete progress.inProgress['daily-' + dateKey];
       if (!prev) progress.coffee += 1;
+      const streak = this.dailyStreak();
+      progress.stats.bestStreak = Math.max(progress.stats.bestStreak || 0, streak);
       this.saveProgress();
-      return { firstTime: !prev, streak: this.dailyStreak() };
+      return { firstTime: !prev, streak };
     },
 
     // Days in a row with the paper solved, counting back from today (or from
@@ -208,6 +234,11 @@
         d.setDate(d.getDate() - 1);
       }
       return streak;
+    },
+
+    // Adds to a lifetime stats counter (saved with the next progress save).
+    bump(key, amount) {
+      progress.stats[key] = (progress.stats[key] || 0) + (amount == null ? 1 : amount);
     },
 
     totalStars() {

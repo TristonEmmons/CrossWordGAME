@@ -90,7 +90,10 @@
             <span class="daily-text"><span>Today’s Paper</span><small id="daily-sub">Easy · 5 words</small></span>
             <span class="daily-badge" id="daily-badge" hidden></span>
           </button>
-          <button class="btn" id="btn-levels">Levels</button>
+          <div class="menu-row">
+            <button class="btn" id="btn-levels">Levels</button>
+            <button class="btn" id="btn-stats">Stats</button>
+          </div>
           <button class="btn" id="btn-howto">How to Play</button>
           <button class="btn btn-quiet" id="btn-menu-settings">Settings</button>
         </div>
@@ -107,6 +110,17 @@
       </header>
       <div class="level-scroll" id="level-scroll">
         <div class="level-map" id="level-map"></div>
+      </div>
+    </section>
+
+    <!-- ============ Stats ============ -->
+    <section class="screen" id="screen-stats" aria-hidden="true">
+      <header class="bar">
+        <button class="btn btn-small" id="btn-stats-back">‹ Menu</button>
+        <h2>Your Stats</h2>
+      </header>
+      <div class="stats-scroll">
+        <article class="stats-page" id="stats-page"></article>
       </div>
     </section>
 

@@ -47,6 +47,7 @@
     }
     if (name === 'menu') renderMenu();
     if (name === 'levels') renderLevelMap();
+    if (name === 'stats') renderStats();
   }
 
   function playLevel(level) {
@@ -230,6 +231,102 @@
       const scroller = $('#level-scroll');
       scroller.scrollTop = Math.max(0, nextY - scroller.clientHeight / 2);
     });
+  }
+
+  // ---- Stats: the paper's "Sports & Stats" page ----
+
+  $('#btn-stats').addEventListener('click', () => showScreen('stats'));
+  $('#btn-stats-back').addEventListener('click', () => showScreen('menu'));
+
+  const fmtNum = (n) => Number(n || 0).toLocaleString('en-US');
+
+  function hoursAndMinutes(ms) {
+    const mins = Math.round((ms || 0) / 60000);
+    if (mins < 60) return `${mins} min`;
+    const h = Math.floor(mins / 60);
+    return `${h} hr ${mins % 60} min`;
+  }
+
+  function statsHeadline(st, levels) {
+    if (!st.wordsFound) return 'Solver Prepares for First Big Hunt';
+    if (levels === 0) return `Promising Newcomer Finds ${fmtNum(st.wordsFound)} Words`;
+    if (st.wordsFound >= 1000) return `Legend Passes ${fmtNum(st.wordsFound)} Words; Pencils Everywhere Salute`;
+    if (st.bonusFound >= 10) return `Eagle-Eyed Solver Spots ${st.bonusFound} Secret Words`;
+    return `Local Solver Finds ${fmtNum(st.wordsFound)} Words, Shows No Sign of Stopping`;
+  }
+
+  function renderStats() {
+    const p = Save.progress;
+    const st = p.stats;
+    const done = Object.entries(p.completed);
+    const levels = done.length;
+    const stars = Save.totalStars();
+    const perfect = done.filter(([, c]) => c.hints === 0).length;
+    const fourStar = done.filter(([, c]) => c.stars >= 4).length;
+    const fastest = done.filter(([, c]) => c.bestTime > 0).sort((a, b) => a[1].bestTime - b[1].bestTime)[0];
+    const papers = Object.keys(p.daily).length;
+    const streak = Save.dailyStreak();
+    const best = Math.max(st.bestStreak || 0, streak);
+
+    // Last 28 days of Today's Paper, oldest first, ending today.
+    const days = [];
+    for (let i = 27; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = CC.todayKey(d);
+      days.push(
+        `<span class="cal-day${p.daily[key] ? ' solved' : ''}${i === 0 ? ' today' : ''}" title="${d.toDateString()}">${d.getDate()}</span>`
+      );
+    }
+
+    const tile = (value, label, cls) => `<div class="stat-tile ${cls || ''}"><b>${value}</b><span>${label}</span></div>`;
+    const row = (label, value) => `<div class="stat-row"><dt>${label}</dt><dd>${value}</dd></div>`;
+
+    $('#stats-page').innerHTML = `
+      <header class="sp-head">
+        <span class="sp-paper">The Crazy WordSearch Times</span>
+        <span class="sp-section">Sports &amp; Stats</span>
+        <span class="sp-date">${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</span>
+      </header>
+      <h3 class="sp-headline">${statsHeadline(st, levels)}</h3>
+      <div class="stat-tiles">
+        ${tile(fmtNum(st.wordsFound), 'Words found', 't-coral')}
+        ${tile(fmtNum(levels), levels === 1 ? 'Level finished' : 'Levels finished', 't-teal')}
+        ${tile(`${ICONS.star}${fmtNum(stars)}`, 'Stars earned', 't-sun')}
+      </div>
+      <div class="sp-columns">
+        <section class="sp-box">
+          <h4>Records</h4>
+          <dl>
+            ${row('Bonus words spotted', fmtNum(st.bonusFound))}
+            ${row('Perfect levels (no hints)', fmtNum(perfect))}
+            ${row('4-star levels', fmtNum(fourStar))}
+            ${row('Fastest level', fastest ? `Level ${fastest[0]} · ${CC.formatTime(fastest[1].bestTime)}` : '—')}
+            ${row('Time spent puzzling', hoursAndMinutes(st.playMs))}
+            ${row('Hints used', fmtNum(st.hintsUsed))}
+            ${row('Coffees drunk', fmtNum(st.coffeeUsed))}
+            ${row('Coffee cups in hand', fmtNum(p.coffee))}
+          </dl>
+        </section>
+        <section class="sp-box">
+          <h4>Today’s Paper</h4>
+          <div class="daily-nums">
+            <div><b>${streak}</b><span>day streak</span></div>
+            <div><b>${best}</b><span>best streak</span></div>
+            <div><b>${papers}</b><span>papers solved</span></div>
+          </div>
+          <div class="cal-grid" aria-label="Papers solved in the last four weeks">${days.join('')}</div>
+          <p class="cal-key"><span class="cal-day solved">✓</span> solved · last 4 weeks</p>
+        </section>
+      </div>
+      <div class="sp-mascot">
+        <img src="assets/img/mascot.png" alt="" width="96" height="96">
+        <p>${
+          st.wordsFound
+            ? `${fmtNum(st.wordsFound)} words found! That’s a lot of looking. Proud of you!`
+            : 'Your stats will fill up as you play. Let’s find some words!'
+        }</p>
+      </div>`;
   }
 
   // ---- Pause ----

@@ -198,7 +198,9 @@
 
   function stopClock() {
     if (!clockStart) return;
-    elapsed += performance.now() - clockStart;
+    const ran = performance.now() - clockStart;
+    elapsed += ran;
+    Save.bump('playMs', ran);
     clockStart = 0;
     clearInterval(clockTimer);
     renderClock();
@@ -255,6 +257,7 @@
 
     updateCounter();
     if (!animate) return;
+    Save.bump('wordsFound');
 
     CC.Audio.sfx('found');
     const rect = board.getBoundingClientRect();
@@ -311,6 +314,7 @@
     wordList.appendChild(li);
 
     if (!animate) return;
+    Save.bump('bonusFound');
     CC.Audio.sfx('bonus');
     const rect = board.getBoundingClientRect();
     run.forEach(([r, c], i) => {
@@ -592,6 +596,7 @@
     const col = CC.clamp(c - Math.floor(Math.random() * HINT_BOX), 0, size - HINT_BOX);
     const h = addHintBox(word, row, col, true);
     usedHintCount++;
+    Save.bump('hintsUsed');
     renderHintButtons();
     CC.Audio.sfx('hint');
     h.node.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
@@ -629,6 +634,7 @@
 
     coffeeBusy = true;
     Save.progress.coffee--;
+    Save.bump('coffeeUsed');
     Save.saveProgress();
     renderCoffee();
     coffeeCount.classList.remove('bump');
