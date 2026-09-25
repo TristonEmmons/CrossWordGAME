@@ -1,7 +1,7 @@
 /* Coffee ranks: the player's progression title, earned by completing numbered levels.
    All rank data lives in RANKS below; everything else asks CC.Ranks. To add a rank,
    fill in its entry (`ready: true`, `levels`, `description`, `badge`, `color`,
-   `accent`, and optionally `trim` and `mascot`) and add its artwork to BADGES / MASCOT_EXTRAS. */
+   `accent`, and optionally `trim`, `mascot` and `milestone`) and add its artwork to BADGES / MASCOT_EXTRAS. */
 (function () {
   'use strict';
 
@@ -73,6 +73,21 @@
       <circle cx="14" cy="25.5" r="0.9" fill="#7a4a28"/><circle cx="43" cy="26" r="0.9" fill="#7a4a28"/><circle cx="41" cy="29" r="0.8" fill="#7a4a28"/>
       <path d="M14 36 V42" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
     </svg>`,
+
+    // Café Mocha: a tall glass mug of chocolatey coffee under a swirl of whipped cream,
+    // drizzled with chocolate and topped with shavings. The richest cup so far.
+    cafeMocha: `<svg viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M46 30 C57 29 57 46 44 45" fill="none" stroke="#2b2a33" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M46 30 C54 30 54 43 44 43" fill="none" stroke="#fffaf1" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M16 24 H47 L44 53 A5 5 0 0 1 39 57 H24 A5 5 0 0 1 19 53 Z" fill="#fffaf1" stroke="#2b2a33" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M17.6 34 H45.4 L44 53 A4 4 0 0 1 39.5 55 H23.5 A4 4 0 0 1 19 53 Z" fill="#4a2618"/>
+      <path d="M17.2 30 H45.8 L45.4 34 H17.6 Z" fill="#d9b48a"/>
+      <path d="M24 44 C27 46 33 42 39 45" fill="none" stroke="#7a4a28" stroke-width="2" stroke-linecap="round"/>
+      <path d="M21 36 V50" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity="0.55"/>
+      <path d="M14 25 C12 18 20 15 23 17 C23 10 33 8 36 13 C40 9 50 12 48 19 C53 20 52 26 48 26 H16 C13 26 12 25 14 25 Z" fill="#fffaf1" stroke="#2b2a33" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M22 21 C26 18 30 23 34 19 C37 16 41 20 44 18" fill="none" stroke="#4a2618" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M34 11 L36 7 M31 12 L30 8 M38 13 L41 10" stroke="#4a2618" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>`,
   };
 
   // Small extras worn by the menu mascot. A rank lists the extras it wears in `mascot`;
@@ -105,6 +120,15 @@
         <path d="M394 372 H464" stroke="#2b2a33" stroke-width="3"/>
         <rect x="396" y="384" width="28" height="26" fill="#c9bda8" stroke="#2b2a33" stroke-width="3"/>
         <path d="M432 388 H462 M432 398 H462 M432 408 H462 M396 422 H462 M396 432 H462 M396 442 H448" stroke="#8e8577" stroke-width="4" stroke-linecap="round"/>
+      </g>`,
+
+    // A rolled chocolate wafer leaning out of the coffee on the right.
+    wafer: `
+      <g transform="rotate(32 350 150)">
+        <rect x="334" y="58" width="32" height="150" rx="9" fill="#5a2e19" stroke="#2b2a33" stroke-width="6"/>
+        <path d="M336 84 L364 72 M336 110 L364 98 M336 136 L364 124 M336 162 L364 150" stroke="#a8683c" stroke-width="6" stroke-linecap="round"/>
+        <ellipse cx="350" cy="62" rx="13" ry="6" fill="#3a1d10" stroke="#2b2a33" stroke-width="4"/>
+        <ellipse cx="350" cy="62" rx="6" ry="2.6" fill="#d9b48a"/>
       </g>`,
   };
 
@@ -162,7 +186,22 @@
       mascot: ['beret', 'beanPin', 'paper'],
       ready: true,
     },
-    { id: 'cafe-mocha', number: 5, name: 'Café Mocha', ready: false },
+    {
+      id: 'cafe-mocha',
+      number: 5,
+      name: 'Café Mocha',
+      description: 'Halfway to becoming a legend.',
+      levels: 20,
+      badge: 'cafeMocha',
+      color: '#4a2618',
+      accent: '#d9b48a',
+      trim: '#e0b44c',
+      mascot: ['beret', 'beanPin', 'paper', 'wafer'],
+      // A milestone rank gets the bigger rank-up: an "Extra!" headline, its motto, a
+      // gold shimmer and a longer fanfare.
+      milestone: 'Halfway there',
+      ready: true,
+    },
     { id: 'vienna-roast', number: 6, name: 'Vienna Roast', ready: false },
     { id: 'kona-reserve', number: 7, name: 'Kona Reserve', ready: false },
     { id: 'geisha-reserve', number: 8, name: 'Geisha Reserve', ready: false },

@@ -51,8 +51,11 @@ Players climb a ladder of 10 coffee ranks by completing numbered levels. The cur
 | 2 | French Roast | 5 levels | Bold enough for the morning edition. | a black beret |
 | 3 | Espresso | 10 levels | Small cup. Serious solver. | + a gold coffee-bean pin on the beret |
 | 4 | Cappuccino | 15 levels | A seasoned solver with good taste. | + a folded morning paper by the saucer |
+| 5 | Café Mocha ★ | 20 levels | Halfway to becoming a legend. | + a chocolate wafer in the coffee |
 
-All rank data lives in `RANKS` in `js/ranks.js`, with badge art in `BADGES` and mascot extras in `MASCOT_EXTRAS`. Ranks 5–10 are listed there but not yet playable. Ranks are earned strictly in order: the lookup climbs the ladder and stops at the first rank that isn't built or earned.
+All rank data lives in `RANKS` in `js/ranks.js`, with badge art in `BADGES` and mascot extras in `MASCOT_EXTRAS`. Ranks 6–10 are listed there but not yet playable.
+
+Every rank-up plays a fanfare and bursts confetti in the rank's colours. Ranks with a `milestone` label (★) get the special-edition version: an "Extra! Extra!" headline with a stamp, the rank's motto, a gold shine, gold stars and a longer fanfare. Ranks are earned strictly in order: the lookup climbs the ladder and stops at the first rank that isn't built or earned.
 
 ## Today's Paper
 

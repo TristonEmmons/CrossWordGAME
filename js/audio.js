@@ -194,6 +194,20 @@
       tone(1046.5, 0, 0.3, 'sine', 0.1);
       tone(1568, 0.05, 0.35, 'sine', 0.07);
     },
+    rankUp() {
+      // A short brassy "ta-da": two pickup notes into a held major chord.
+      tone(392, 0, 0.14, 'square', 0.035);
+      tone(523.25, 0.12, 0.14, 'square', 0.035);
+      [523.25, 659.25, 783.99].forEach((f) => tone(f, 0.26, 0.9, 'triangle', 0.1));
+      tone(1046.5, 0.26, 0.9, 'sine', 0.05);
+    },
+    milestone() {
+      // The rank-up fanfare, answered by a higher chord and a sparkle on top.
+      SFX.rankUp();
+      [659.25, 830.61, 987.77].forEach((f) => tone(f, 0.7, 0.4, 'triangle', 0.08));
+      [783.99, 987.77, 1174.66, 1567.98].forEach((f) => tone(f, 1.05, 1.4, 'triangle', 0.08));
+      [1568, 2093, 2637].forEach((f, i) => tone(f, 1.1 + i * 0.06, 0.6, 'sine', 0.03));
+    },
   };
 
   CC.Audio = {

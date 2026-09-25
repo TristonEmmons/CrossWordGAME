@@ -204,8 +204,34 @@
     $('#rank-chip-name').textContent = rank.name;
     chip.dataset.rank = rank.id;
     chip.classList.toggle('promoted', !!promoted);
-    // The mascot's rank extra (e.g. French Roast's beret).
+    if (promoted) rankUpFanfare(promoted, $('#rank-chip-badge'), 1100);
+    // The mascot's rank extras (e.g. French Roast's beret).
     $('#mascot-extra').innerHTML = CC.Ranks.mascotHtml(rank);
+  }
+
+  // The rank-up presentation, shared by the level-complete card and the menu chip.
+  // Every promotion gets a fanfare and a burst in the rank's own colors from `node`;
+  // milestone ranks get a longer fanfare and a second shower of gold stars.
+  function rankUpFanfare(rank, node, delay) {
+    return setTimeout(() => {
+      if (!node.isConnected || !node.offsetParent) return;
+      const r = node.getBoundingClientRect();
+      const x = r.left + r.width / 2;
+      const y = r.top + r.height / 2;
+      CC.Audio.sfx(rank.milestone ? 'milestone' : 'rankUp');
+      CC.Effects.burst(x, y, rank.milestone ? 56 : 30, [rank.color, rank.accent, rank.trim || '#ffc145', '#fffaf1']);
+      if (rank.milestone) setTimeout(() => CC.Effects.burst(x, y, 30, 'gold'), 260);
+    }, delay);
+  }
+
+  // The "Promoted!" line on the level-complete card. A milestone rank runs as a special
+  // edition: an "Extra! Extra!" kicker, a stamp with the milestone, and the rank's motto.
+  function promotionHtml(rank) {
+    const kicker = rank.milestone
+      ? `Extra! Extra! <i class="promo-stamp">${rank.milestone}</i>`
+      : 'Promoted!';
+    const motto = rank.milestone ? `<em class="promo-motto">“${rank.description}”</em>` : '';
+    return `<span class="rank-badge">${CC.Ranks.badgeHtml(rank)}</span><span class="promo-text"><small>${kicker}</small><b>${rank.name}</b>${motto}</span>`;
   }
 
   $('#rank-chip').addEventListener('click', () => showScreen('stats'));
@@ -437,7 +463,10 @@
     if (result.promotion) {
       const r = result.promotion;
       CC.Ranks.paint(promo, r);
-      promo.innerHTML = `<span class="rank-badge">${CC.Ranks.badgeHtml(r)}</span><span><small>Promoted!</small><b>${r.name}</b></span>`;
+      promo.classList.toggle('milestone', !!r.milestone);
+      promo.innerHTML = promotionHtml(r);
+      // Fires as the line pops in (its CSS animation starts at 2.2s).
+      completeTimers.push(rankUpFanfare(r, promo.querySelector('.rank-badge'), 2500));
     }
     const note = $('#complete-note');
     note.textContent = result.stars >= 3 ? 'Solved without hints — perfect!' : 'Solve it without hints for 3 stars.';

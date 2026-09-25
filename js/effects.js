@@ -84,10 +84,11 @@
 
   CC.Effects = {
     // Small burst at a point (e.g. the centre of a found word). `style` 'gold' throws
-    // gold stars instead of mixed confetti.
+    // gold stars instead of mixed confetti; an array of colors throws confetti in those.
     burst(x, y, count, style) {
       const n = count || 26;
       const gold = style === 'gold';
+      const palette = Array.isArray(style) ? style : gold ? GOLD : COLORS;
       for (let i = 0; i < n; i++) {
         const angle = Math.random() * Math.PI * 2;
         const speed = 120 + Math.random() * 260;
@@ -99,7 +100,7 @@
           gravity: 420,
           drag: 0.97,
           size: gold ? 7 + Math.random() * 7 : 5 + Math.random() * 5,
-          color: gold ? GOLD[i % GOLD.length] : COLORS[i % COLORS.length],
+          color: palette[i % palette.length],
           shape: gold ? 'star' : Math.random() < 0.5 ? 'rect' : 'dot',
           rot: Math.random() * 6,
           spin: (Math.random() - 0.5) * 12,
