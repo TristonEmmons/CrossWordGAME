@@ -1,5 +1,5 @@
 /* =========================================================
-   Crazy Crossword — styles
+   Crazy WordSearch — styles
    Palette: warm neutral background + coral, teal and sun accents.
    Motion uses transform/opacity only so it stays on the GPU.
    ========================================================= */
@@ -463,9 +463,12 @@ code {
 
   .mascot-bubble {
     left: auto;
-    right: calc(50% + 44px);
-    top: 10px;
-    max-width: min(150px, calc(50vw - 74px));
+    right: calc(50% + 40px);
+    top: 2px;
+    max-width: min(190px, calc(50vw - 56px));
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    line-height: 1.25;
     border-radius: 16px 16px 4px 16px;
     transform-origin: 100% 100%;
   }

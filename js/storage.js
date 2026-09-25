@@ -3,6 +3,7 @@
   'use strict';
 
   const CC = window.CC;
+  // Storage keys keep the game's original name so saved progress carries over.
   const PROGRESS_KEY = 'crazyCrossword.progress.v1';
   const SETTINGS_KEY = 'crazyCrossword.settings.v1';
 
@@ -160,6 +161,7 @@
     exportBackup() {
       this.saveProgress();
       return JSON.stringify(
+        // 'crazy-crossword' is the backup file's fixed tag (the game's original name).
         { game: 'crazy-crossword', version: 1, savedAt: new Date().toISOString(), progress, settings },
         null,
         1

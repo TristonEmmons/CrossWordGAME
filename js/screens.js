@@ -455,7 +455,7 @@
     const a = document.createElement('a');
     const day = new Date().toISOString().slice(0, 10);
     a.href = URL.createObjectURL(blob);
-    a.download = `crazy-crossword-backup-${day}.json`;
+    a.download = `crazy-wordsearch-backup-${day}.json`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -470,7 +470,7 @@
     if (!file) return;
     file.text().then((text) => {
       if (!Save.importBackup(text)) {
-        backupNote.textContent = "That file isn't a Crazy Crossword backup. Pick the .json file you saved.";
+        backupNote.textContent = "That file isn't a Crazy WordSearch backup. Pick the .json file you saved.";
         return;
       }
       backupNote.textContent = 'Backup restored! Reloading…';

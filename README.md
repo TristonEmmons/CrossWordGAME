@@ -1,4 +1,4 @@
-# Crazy Crossword
+# Crazy WordSearch
 
 A browser word-search game. Words are hidden in a big letter grid. Drag from the first letter to the last to find each one.
 

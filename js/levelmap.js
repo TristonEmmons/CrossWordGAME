@@ -16,7 +16,7 @@
     { name: 'Coffee Corner', sky: '#f7e6cf', hill: '#efd4b0', art: ['cafe', 'cup', 'beans', 'bush'] },
     { name: 'Newsstand Avenue', sky: '#e2ecf3', hill: '#cddce8', art: ['kiosk', 'lamp', 'papers', 'bush'] },
     { name: 'Library Hill', sky: '#e5efd9', hill: '#cfe2bd', art: ['books', 'tree', 'owl', 'tree'] },
-    { name: 'Crossword Park', sky: '#dcefd2', hill: '#bfdfae', art: ['bench', 'tree', 'pond', 'flowers'] },
+    { name: 'WordSearch Park', sky: '#dcefd2', hill: '#bfdfae', art: ['bench', 'tree', 'pond', 'flowers'] },
     { name: 'Seaside Boardwalk', sky: '#dcf0f4', hill: '#f3e2bd', art: ['lighthouse', 'umbrella', 'waves', 'shell'] },
     { name: 'Mountain Pass', sky: '#e7e3f4', hill: '#d3cde9', art: ['mountain', 'pine', 'mountain', 'pine'] },
     { name: 'Autumn Orchard', sky: '#f9e3cf', hill: '#f1c9a3', art: ['orangeTree', 'pumpkin', 'orangeTree', 'leaves'] },
