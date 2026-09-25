@@ -202,6 +202,11 @@
     CC.Ranks.paint(chip, rank);
     $('#rank-chip-number').textContent = `Rank ${rank.number} of ${CC.Ranks.total}`;
     $('#rank-chip-name').textContent = rank.name;
+    // A thin ring around the badge fills toward the next rank.
+    const { next, fraction, levelsToGo } = CC.Ranks.progress();
+    $('#rank-chip-ring').style.setProperty('--p', next ? fraction : 1);
+    chip.setAttribute('aria-label', `Your rank: ${rank.name}, ${rank.number} of ${CC.Ranks.total}. ${nextRankLine(next, levelsToGo)} Open stats`);
+    chip.title = nextRankLine(next, levelsToGo);
     chip.dataset.rank = rank.id;
     chip.dataset.tier = CC.Ranks.tierAttr(rank);
     mascot.dataset.tier = CC.Ranks.tierAttr(rank);
@@ -239,19 +244,50 @@
 
   $('#rank-chip').addEventListener('click', () => showScreen('stats'));
 
-  // Rank panel for the stats page: badge, name, motto, progress, and the ladder.
-  function rankPanelHtml() {
-    const { current, next, fraction, levelsToGo } = CC.Ranks.progress();
-    let nextLine;
-    if (!next) nextLine = 'You’ve reached the top. Every level still counts in your stats.';
-    else if (levelsToGo == null) nextLine = 'Next rank coming soon';
-    else nextLine = `${levelsToGo} more level${levelsToGo === 1 ? '' : 's'} to ${next.name}`;
-    const ladder = CC.Ranks.all
+  document.addEventListener('click', (e) => {
+    const cup = e.target.closest('.shelf-cup');
+    if (!cup) return;
+    const wrap = cup.closest('.rank-shelf-wrap');
+    const pick = CC.Ranks.all[Number(cup.dataset.rank) - 1];
+    wrap.innerHTML = shelfHtml(CC.Ranks.current(), pick);
+    wrap.querySelector(`.shelf-cup[data-rank="${pick.number}"]`).focus();
+    CC.Audio.sfx('tap');
+  });
+
+  // "3 more levels to Espresso." (or the top-rank line), used wherever progress is shown.
+  function nextRankLine(next, levelsToGo) {
+    if (!next) return 'You’ve reached the top rank.';
+    if (levelsToGo == null) return 'Next rank coming soon.';
+    return `${levelsToGo} more level${levelsToGo === 1 ? '' : 's'} to ${next.name}.`;
+  }
+
+  // One line about a rank on the trophy shelf: what it is and how you get (or got) it.
+  function shelfDetail(r, current) {
+    const done = CC.Ranks.levelsCompleted();
+    let when;
+    if (r.number === 1) when = 'Where every solver starts.';
+    else if (r.number <= current.number) when = `Earned by finishing level ${r.levels}.`;
+    else when = `Unlocks at level ${r.levels} · ${r.levels - done} more to go.`;
+    return `<b>${r.name}</b> <em>“${r.description}”</em> <span>${when}</span>`;
+  }
+
+  // The trophy shelf: every rank's badge, earned ones in colour and the rest as
+  // silhouettes. Tapping one shows its details below the shelf.
+  function shelfHtml(current, show) {
+    const cups = CC.Ranks.all
       .map((r) => {
         const state = r.number < current.number ? 'past' : r.number === current.number ? 'now' : 'ahead';
-        return `<li class="rung ${state}" title="${r.number <= current.number ? r.name : 'Rank ' + r.number}">${r.number}</li>`;
+        const label = r.number <= current.number ? `${r.name}, earned` : `Rank ${r.number}, ${r.name}, locked`;
+        return `<li><button class="shelf-cup ${state}${r === show ? ' picked' : ''}" data-rank="${r.number}" style="${CC.Ranks.styleAttr(r)}" aria-label="${label}" aria-pressed="${r === show}"><span class="rank-badge">${CC.Ranks.badgeHtml(r)}</span><i>${r.number}</i></button></li>`;
       })
       .join('');
+    return `<ol class="rank-shelf" aria-label="Coffee ranks">${cups}</ol><p class="shelf-detail" aria-live="polite">${shelfDetail(show, current)}</p>`;
+  }
+
+  // Rank panel for the stats page: badge, name, motto, progress, and the trophy shelf.
+  function rankPanelHtml() {
+    const { current, next, fraction, levelsToGo } = CC.Ranks.progress();
+    const nextLine = next ? nextRankLine(next, levelsToGo) : 'You’ve reached the top. Every level still counts in your stats.';
     return `
       <section class="sp-rank" data-rank="${current.id}" data-tier="${CC.Ranks.tierAttr(current)}" style="${CC.Ranks.styleAttr(current)}">
         <div class="rank-seal">${CC.Ranks.badgeHtml(current)}</div>
@@ -261,7 +297,7 @@
           <p class="rank-motto">“${current.description}”</p>
           <div class="rank-bar"><span style="transform:scaleX(${fraction})"></span></div>
           <p class="rank-next">${nextLine}</p>
-          <ol class="rank-ladder" aria-label="Coffee ranks">${ladder}</ol>
+          <div class="rank-shelf-wrap">${shelfHtml(current, next && next.ready ? next : current)}</div>
         </div>
       </section>`;
   }
@@ -461,6 +497,7 @@
       }, 600 + i * 450);
     });
     showBrew(result.brew);
+    showRankProgress(result);
     const promo = $('#complete-promotion');
     promo.hidden = !result.promotion;
     if (result.promotion) {
@@ -501,6 +538,23 @@
 
   // Coffee brewing bar: fills by this level's share, and pours a cup when it tops out.
   let brewTimers = [];
+  // On a first clear that didn't promote: how far this level moved you toward the next
+  // rank. The bar grows from where it was before the level to where it is now.
+  function showRankProgress(result) {
+    const row = $('#complete-rank');
+    const now = CC.Ranks.progress();
+    row.hidden = !!(result.daily || result.promotion || !result.firstClear || !now.next || now.levelsToGo == null);
+    if (row.hidden) return;
+    const before = CC.Ranks.progress(CC.Ranks.levelsCompleted() - 1);
+    CC.Ranks.paint(row, now.next);
+    row.innerHTML = `<span class="rank-badge">${CC.Ranks.badgeHtml(now.current)}</span>
+      <span class="rp-text"><small>${nextRankLine(now.next, now.levelsToGo)}</small>
+        <span class="rp-bar"><span style="transform:scaleX(${before.fraction})"></span></span></span>
+      <span class="rank-badge rp-next">${CC.Ranks.badgeHtml(now.next)}</span>`;
+    const fill = row.querySelector('.rp-bar span');
+    completeTimers.push(setTimeout(() => (fill.style.transform = `scaleX(${now.fraction})`), 1400));
+  }
+
   function showBrew(brew) {
     const box = $('#complete-brew');
     const fill = $('#brew-fill');

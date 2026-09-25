@@ -43,7 +43,15 @@ To add more songs, drop the files into `assets/music/` and add their names to `a
 
 ## Ranks
 
-Players climb a ladder of 10 coffee ranks by completing numbered levels. The current rank shows on the main menu and the Stats page. A promotion appears on the level-complete card, or on the menu when a save already qualifies. Some ranks also give the menu mascot a small extra.
+Players climb a ladder of 10 coffee ranks by completing numbered levels. Ranks show up across the game:
+
+- **Main menu:** a rank chip whose badge has a ring that fills toward the next rank.
+- **World map:** a flag beside each level that unlocks a rank, greyed out until it's earned. The map mascot wears your rank's extras.
+- **Level complete:** a first clear shows a bar that grows toward the next rank ("3 more levels to Cappuccino"). A rank-up shows the promotion instead.
+- **Stats:** a trophy shelf of all ten badges, earned ones in colour and the rest as silhouettes. Tap one for its motto and unlock level.
+- **Menu mascot:** wears each rank's extra, as listed below.
+
+A save that already qualifies for a new rank gets its promotion on the main menu.
 
 | Rank | Name | Reached after | Motto | Mascot extra |
 | --- | --- | --- | --- | --- |

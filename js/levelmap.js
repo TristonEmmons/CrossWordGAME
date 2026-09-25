@@ -1,6 +1,7 @@
 /* Level select as a cartoon adventure map: a winding road through themed chapter
    worlds (five levels each), with landmarks, wooden signposts, coin-style level
-   buttons, and the coffee-cup mascot standing at the next level to play. */
+   buttons, flags at the levels that unlock coffee ranks, and the coffee-cup mascot
+   (in its rank extras) standing at the next level to play. */
 (function () {
   'use strict';
 
@@ -178,6 +179,8 @@
           const size = artSize * (k % 2 ? 0.72 : 1);
           const ax = cx + side * (amp * (narrow ? 0.95 : 1.05)) - size / 2 + (rng() - 0.5) * 20;
           if (ax < 4 || ax + size > width - 4) continue;
+          // On narrow screens a rank flag takes this spot.
+          if (narrow && CC.Ranks.unlockedAt(i + 1)) continue;
           const art = CC.el('div', 'landmark');
           art.innerHTML = ART[world.art[k % world.art.length]];
           place(art, ax, py - size * 0.75 - top, size, size);
@@ -245,6 +248,16 @@
           node.innerHTML = `<span class="coin"><span class="num">${level}</span></span><span class="lock">${icons.lock}</span>`;
           node.setAttribute('aria-label', `Level ${level}, locked`);
         }
+        // A flag at each level that unlocks a coffee rank, on the side facing the middle
+        // of the map (the landmarks sit on the far side). In colour once earned.
+        const rank = CC.Ranks.unlockedAt(level);
+        if (rank) {
+          const flag = CC.el('span', 'node-rank' + (x >= cx ? ' to-left' : ' to-right') + (record ? ' earned' : ''));
+          flag.setAttribute('style', CC.Ranks.styleAttr(rank));
+          flag.innerHTML = `<span class="rank-badge">${CC.Ranks.badgeHtml(rank)}</span><span class="node-rank-text"><small>${record ? 'Earned' : 'Rank ' + rank.number}</small><b>${rank.name}</b></span>`;
+          node.appendChild(flag);
+          node.setAttribute('aria-label', `${node.getAttribute('aria-label')}. ${record ? 'Earned' : 'Unlocks'} the ${rank.name} rank`);
+        }
         host.appendChild(node);
       }
 
@@ -266,7 +279,10 @@
       const cur = pts[Math.min(next, count) - 1];
       const buddy = CC.el('button', 'map-mascot');
       buddy.setAttribute('aria-label', `Play level ${next}`);
-      buddy.innerHTML = `<img src="assets/img/mascot.png" alt="" draggable="false"><span class="map-bubble">Level ${next}! Let’s go!</span>`;
+      // Dressed in the player's rank extras, like the menu mascot.
+      const rank = CC.Ranks.current();
+      buddy.dataset.tier = CC.Ranks.tierAttr(rank);
+      buddy.innerHTML = `<img src="assets/img/mascot.png" alt="" draggable="false"><span class="mascot-extra" aria-hidden="true">${CC.Ranks.mascotHtml(rank)}</span><span class="map-bubble">Level ${next}! Let’s go!</span>`;
       const side = cur[0] >= cx ? -1 : 1;
       const msize = narrow ? 74 : 96;
       buddy.classList.toggle('left', side < 0);

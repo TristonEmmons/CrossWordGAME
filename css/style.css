@@ -1103,6 +1103,98 @@ code {
 .node-stars .s3 { transform: translateY(8px) rotate(18deg); }
 .node-stars .s4 { transform: translateY(16px) rotate(30deg); margin-left: -4px; }
 
+/* Coffee-rank flags beside the levels that unlock a rank */
+.node-rank {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 4px;
+  border: 2.5px solid var(--news-ink);
+  border-radius: 999px;
+  background: #fffaf0;
+  box-shadow: 0 3px 0 var(--news-ink);
+  color: var(--news-ink);
+  white-space: nowrap;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.node-rank.to-left {
+  right: calc(100% + 12px);
+  flex-direction: row-reverse;
+  padding: 4px 4px 4px 10px;
+}
+
+.node-rank.to-right {
+  left: calc(100% + 12px);
+}
+
+.node-rank .rank-badge {
+  width: 42px;
+  height: 42px;
+  border-width: 2px;
+  box-shadow: none;
+}
+
+.node-rank-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+  text-align: left;
+}
+
+.node-rank.to-left .node-rank-text {
+  text-align: right;
+}
+
+.node-rank small {
+  font-family: 'Old Standard TT', Georgia, serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--coral-deep);
+}
+
+.node-rank b {
+  font-family: 'Abril Fatface', Georgia, serif;
+  font-weight: 400;
+  font-size: 17px;
+}
+
+/* Not earned yet: a greyed-out preview of what's ahead. */
+.node-rank:not(.earned) {
+  background: #f1ede6;
+  color: #6f6a73;
+  box-shadow: 0 3px 0 #8e8893;
+  border-color: #8e8893;
+}
+
+.node-rank:not(.earned) .rank-badge {
+  filter: grayscale(1) opacity(0.6);
+}
+
+.narrow .node-rank {
+  gap: 4px;
+  padding-right: 8px;
+}
+
+.narrow .node-rank.to-left {
+  padding: 4px 4px 4px 8px;
+}
+
+.narrow .node-rank .rank-badge {
+  width: 32px;
+  height: 32px;
+}
+
+.narrow .node-rank b {
+  font-size: 13px;
+}
+
 /* Mascot waiting at the next level */
 .map-mascot {
   position: absolute;
@@ -1122,8 +1214,18 @@ code {
   animation: mascot-bob 2.4s ease-in-out infinite;
 }
 
-.map-mascot:hover img {
+.map-mascot .mascot-extra {
+  animation-duration: 2.4s;
+  animation-delay: 0s;
+}
+
+.map-mascot:hover img,
+.map-mascot:hover .mascot-extra {
   animation: mascot-hop 0.7s cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+
+.map-mascot[data-tier~='elite'] img {
+  filter: drop-shadow(0 6px 5px rgba(43, 42, 51, 0.3)) drop-shadow(0 0 12px rgba(240, 196, 90, 0.55));
 }
 
 .map-bubble {
@@ -3741,36 +3843,174 @@ body.high-contrast #screen-stats {
   font-weight: 800;
 }
 
-.rank-ladder {
-  display: flex;
-  gap: 5px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.rank-shelf-wrap {
+  margin-top: 2px;
 }
 
-.rung {
+/* Trophy shelf: every rank's badge on a wooden ledge. Earned ranks in colour, the rest
+   as silhouettes; tap one for its details. */
+.rank-shelf {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0;
+  padding: 0 4px 7px;
+  list-style: none;
+  background: linear-gradient(#b98552, #8a5a35) left bottom / 100% 7px no-repeat;
+  border-radius: 0 0 4px 4px;
+}
+
+.shelf-cup {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
-  border: 2px solid var(--news-rule);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.6);
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--ink-soft);
+  width: 100%;
+  padding: 2px 0 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.15s ease;
 }
 
-.rung.past,
-.rung.now {
-  border-color: var(--news-ink);
-  background: var(--rank-color, #c98a52);
+.shelf-cup .rank-badge {
+  width: 100%;
+  max-width: 44px;
+  height: auto;
+  aspect-ratio: 1;
+  border-width: 2px;
+  box-shadow: 0 2px 0 var(--news-ink);
+}
+
+.shelf-cup i {
+  position: absolute;
+  right: 0;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border: 1.5px solid var(--news-ink);
+  border-radius: 999px;
+  background: #fff;
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--news-ink);
+}
+
+.shelf-cup.ahead .rank-badge {
+  filter: grayscale(1) brightness(1.15) opacity(0.45);
+  box-shadow: none;
+}
+
+.shelf-cup.now .rank-badge {
+  box-shadow: 0 2px 0 var(--news-ink), 0 0 0 3px #ffd35e;
+}
+
+.shelf-cup:hover {
+  transform: translateY(-3px);
+}
+
+.shelf-cup.picked {
+  transform: translateY(-4px);
+}
+
+.shelf-cup.picked i {
+  background: var(--news-ink);
   color: #fff;
 }
 
-.rung.now {
-  box-shadow: 0 0 0 3px #ffd35e;
+.shelf-cup:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.shelf-detail {
+  min-height: 2.6em;
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.shelf-detail b {
+  font-family: 'Abril Fatface', Georgia, serif;
+  font-weight: 400;
+  font-size: 15px;
+}
+
+.shelf-detail em {
+  font-family: 'Old Standard TT', Georgia, serif;
+}
+
+.shelf-detail span {
+  display: block;
+  font-weight: 800;
+}
+
+/* Menu rank chip: a thin progress ring around the badge, filling toward the next rank */
+.rank-ring {
+  display: grid;
+  flex-shrink: 0;
+  padding: 4px;
+  border-radius: 50%;
+  background: conic-gradient(#e0b44c calc(var(--p, 0) * 1turn), rgba(43, 42, 51, 0.14) 0);
+}
+
+/* Level complete: progress toward the next rank on a first clear */
+.rank-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  border: 2px solid var(--news-rule, #d9cdb8);
+  border-radius: 14px;
+  background: #fbf3e4;
+  animation: fade-up 0.4s ease 1.1s both;
+}
+
+.rank-progress .rank-badge {
+  width: 34px;
+  height: 34px;
+  border-width: 2px;
+  box-shadow: none;
+}
+
+.rank-progress .rp-next {
+  filter: grayscale(1) opacity(0.5);
+}
+
+.rp-text {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.rp-text small {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--news-ink);
+}
+
+.rp-bar {
+  display: block;
+  height: 10px;
+  border: 2px solid var(--news-ink);
+  border-radius: 999px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.rp-bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #c08552, var(--rank-color, #7a4a28));
+  transform-origin: left;
+  transition: transform 0.9s cubic-bezier(0.3, 0.8, 0.3, 1);
 }
 
 @media (max-width: 520px) {
@@ -3783,16 +4023,12 @@ body.high-contrast #screen-stats {
     margin-inline: auto;
   }
 
-  .rank-ladder {
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 3px;
-  }
-
-  .rung {
-    width: 22px;
-    height: 22px;
-    font-size: 10px;
+  .rank-shelf {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    row-gap: 10px;
+    background:
+      linear-gradient(#b98552, #8a5a35) left calc(50% + 2px) / 100% 6px no-repeat,
+      linear-gradient(#b98552, #8a5a35) left bottom / 100% 7px no-repeat;
   }
 }
 

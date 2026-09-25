@@ -539,14 +539,22 @@
     tierAttr,
     tierLabel,
 
+    levelsCompleted,
+
     current() {
       return rankFor(levelsCompleted());
     },
 
+    // The rank that finishing `level` unlocks, if any (e.g. level 5 -> French Roast).
+    unlockedAt(level) {
+      return RANKS.find((r) => r.ready && r.number > 1 && r.levels === level) || null;
+    },
+
     // The next rank up, and how far along the player is. `ready` is false while the
     // next rank hasn't been added to the game yet.
-    progress() {
-      const done = levelsCompleted();
+    // `levels` defaults to the player's own count; pass another to ask "what if".
+    progress(levels) {
+      const done = levels == null ? levelsCompleted() : levels;
       const cur = rankFor(done);
       const next = RANKS[cur.number] || null; // RANKS is ordered, number = index + 1
       if (!next) return { current: cur, next: null, fraction: 1, levelsToGo: 0 };

@@ -82,7 +82,7 @@
         </h1>
         <p class="tagline">Find every hidden word.</p>
         <button class="rank-chip" id="rank-chip" aria-label="Your rank. Open stats">
-          <span class="rank-badge" id="rank-chip-badge"></span>
+          <span class="rank-ring" id="rank-chip-ring"><span class="rank-badge" id="rank-chip-badge"></span></span>
           <span class="rank-chip-text"><small id="rank-chip-number">Rank 1 of 10</small><b id="rank-chip-name">House Blend</b></span>
         </button>
         <div class="menu-buttons">
@@ -330,6 +330,7 @@
       <div class="big-stars" id="complete-stars"></div>
       <p class="sub" id="complete-note"></p>
       <div class="promotion" id="complete-promotion" hidden></div>
+      <div class="rank-progress" id="complete-rank" hidden></div>
       <div class="brew" id="complete-brew" hidden>
         <svg class="brew-cup" viewBox="0 0 64 64" aria-hidden="true"><use href="#coffee-cup"/></svg>
         <div class="brew-body">

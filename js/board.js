@@ -690,12 +690,14 @@
     const stars = hintCount === 0 ? (bonusFound.size > 0 ? 4 : 3) : Math.max(1, 3 - hintCount);
     let brew = null;
     let daily = null;
+    let firstClear = false;
     if (puzzle.daily) {
       // The daily paper has its own reward (a cup on the first solve) and streak.
       daily = Save.recordDaily(puzzle.level.slice('daily-'.length), stars, time, hintCount);
       renderCoffee();
     } else {
       const firstTime = Save.recordCompletion(puzzle.level, stars, time, hintCount);
+      firstClear = firstTime;
       // Only new levels brew coffee, so replaying easy levels can't farm cups.
       brew = firstTime ? Save.brewCoffee(hintCount) : null;
     }
@@ -705,6 +707,7 @@
         level: puzzle.level,
         daily,
         promotion,
+        firstClear,
         time,
         hints: hintCount,
         stars,
