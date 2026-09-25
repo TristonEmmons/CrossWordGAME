@@ -452,6 +452,46 @@
   }
   $('#btn-corner-settings').addEventListener('click', openSettings);
 
+  // ---- Full screen ----
+
+  const fsBtn = $('#btn-fullscreen');
+  const FS_ICONS = {
+    enter:
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    exit:
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  };
+  const root = document.documentElement;
+  const fsElement = () => document.fullscreenElement || document.webkitFullscreenElement;
+
+  function syncFullscreenUi() {
+    const on = !!fsElement();
+    fsBtn.innerHTML = on ? FS_ICONS.exit : FS_ICONS.enter;
+    fsBtn.setAttribute('aria-label', on ? 'Exit full screen' : 'Full screen');
+    fsBtn.title = on ? 'Exit full screen' : 'Full screen';
+  }
+
+  function toggleFullscreen() {
+    try {
+      if (fsElement()) {
+        (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      } else {
+        const p = (root.requestFullscreen || root.webkitRequestFullscreen).call(root);
+        if (p && p.catch) p.catch(() => CC.toast("Full screen isn't available here"));
+      }
+    } catch (e) {
+      CC.toast("Full screen isn't available here");
+    }
+  }
+
+  if (document.fullscreenEnabled || document.webkitFullscreenEnabled) {
+    fsBtn.hidden = false;
+    fsBtn.addEventListener('click', toggleFullscreen);
+    document.addEventListener('fullscreenchange', syncFullscreenUi);
+    document.addEventListener('webkitfullscreenchange', syncFullscreenUi);
+    syncFullscreenUi();
+  }
+
   // Soft click sound on every button press.
   document.addEventListener('click', (e) => {
     if (e.target.closest('button:not(.hint-btn):not(.mute-btn):not(.coffee-btn)')) CC.Audio.sfx('tap');
