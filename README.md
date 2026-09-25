@@ -31,6 +31,8 @@ To add more songs, drop the files into `assets/music/` and add their names to `a
 | `js/board.js` | Grid rendering, drag selection, hints, timer, streaks |
 | `js/audio.js` | Music playlist/looping/crossfade, mute and volume, synthesized sound effects |
 | `js/effects.js` | Canvas confetti and toasts |
+| `js/stickers.js` | Main-menu star sticker pile and its fly-in animation |
+| `js/newspaper.js` | The newspaper page around the puzzle: paper and desk textures, masthead dateline, and the news columns that fill the margins |
 | `js/screens.js` | Menu, level map, pause, settings, level complete |
 | `data/word-library.json` | 5,000-word library in buckets by length (3–12 letters) |
 | `data/word-library.js` | The same data as a script, so the game works from `file://` |

@@ -12,8 +12,11 @@
   const REVEAL_MS = 5000;
   const FOUND_TINTS = 4; // number of capsule colour variants in CSS
   const COFFEE_CLEARANCE = 96; // px kept free in the board box's corner for the coffee button
+  const PRINT_AFTER_SPIN_MS = 820; // matches the newspaper's spin-in animation
+  const PANEL_SHADOW = 5; // the printed panel's hard shadow, beyond its padding and border
 
   const wrap = document.getElementById('board-wrap');
+  const panel = document.getElementById('puzzle-panel');
   const board = document.getElementById('board');
   const grid = document.getElementById('grid');
   const layer = document.getElementById('board-layer');
@@ -47,10 +50,15 @@
   // Keeps the coffee button's bottom-left corner clear: either leave room at both sides
   // (board centred) or at the bottom (board pinned to the top), whichever keeps letters bigger.
   function computeCellSize() {
-    const rect = wrap.getBoundingClientRect();
-    const pad = 16;
-    const w = rect.width - pad;
-    const h = rect.height - pad;
+    // clientWidth/Height are layout sizes, so the newspaper's spin-in transform can't skew them.
+    const style = getComputedStyle(wrap);
+    const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+    const padY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+    const ps = getComputedStyle(panel);
+    const chrome =
+      parseFloat(ps.paddingLeft) + parseFloat(ps.paddingRight) + parseFloat(ps.borderLeftWidth) * 2 + PANEL_SHADOW;
+    const w = wrap.clientWidth - padX - chrome;
+    const h = wrap.clientHeight - padY - chrome;
     const beside = Math.min(w - 2 * COFFEE_CLEARANCE, h);
     const below = Math.min(w, h - COFFEE_CLEARANCE);
     wrap.classList.toggle('pin-top', below > beside);
@@ -67,6 +75,7 @@
     found.forEach((f) => placeCapsule(f.capsule, f.cells));
     hints.forEach(placeHintBox);
     if (selection.capsule && selection.cells.length) placeCapsule(selection.capsule, selection.cells);
+    CC.Newspaper.layout();
   }
 
   new ResizeObserver(() => active && layout()).observe(wrap);
@@ -115,8 +124,9 @@
     for (let r = 0; r < size; r++) {
       for (let c = 0; c < size; c++) {
         const node = CC.el('div', 'cell enter', puzzle.grid[r][c]);
-        // Diagonal wave entrance, capped so large boards still settle quickly.
-        node.style.animationDelay = Math.min(900, (r + c) * 14) + 'ms';
+        // Letters "print" onto the paper in a diagonal wave once it has spun in and landed
+        // (the spin is cheap while the page is static). Capped so big boards settle quickly.
+        node.style.animationDelay = PRINT_AFTER_SPIN_MS + Math.min(900, (r + c) * 14) + 'ms';
         cells.push(node);
         frag.appendChild(node);
       }
@@ -127,7 +137,7 @@
         n.classList.remove('enter');
         n.style.animationDelay = '';
       });
-    }, 1600);
+    }, PRINT_AFTER_SPIN_MS + 1400);
 
     puzzle.words.forEach((word) => {
       const li = CC.el('li', 'word', word);
@@ -210,6 +220,7 @@
     const total = puzzle.words.length;
     countLabel.textContent = `${found.size} / ${total} words found`;
     progressFill.style.transform = `scaleX(${found.size / total})`;
+    CC.Newspaper.progress(found.size, total);
   }
 
   // `byCoffee` marks words handed over by a coffee cup: they get a latte-coloured
@@ -704,6 +715,7 @@
       stopClock();
       puzzle = CC.loadLevel(level);
       size = puzzle.size;
+      CC.Newspaper.newIssue(level, puzzle.words.length);
       paused = false;
       streak = 0;
       lastFoundAt = 0;

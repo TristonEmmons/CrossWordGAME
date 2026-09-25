@@ -7,7 +7,7 @@
   <meta name="description" content="Find every hidden word in the grid.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&family=Abril+Fatface&family=Grenze+Gotisch:wght@700;800&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body data-screen="menu">
@@ -123,11 +123,58 @@
         </div>
       </header>
       <div class="game-body">
-        <div class="board-area">
+        <div class="board-area" id="board-area">
+          <!-- The newspaper page the puzzle is printed on. Everything here is decoration. -->
+          <div class="paper" id="paper" aria-hidden="true">
+            <div class="paper-col left" id="paper-col-left" hidden></div>
+            <div class="paper-col right" id="paper-col-right" hidden></div>
+            <div class="paper-strip" id="paper-strip" hidden></div>
+            <svg class="coffee-stain" viewBox="0 0 120 120">
+              <path d="M61 13 C87 12 107 33 106 60 C105 87 85 107 58 106 C31 105 13 85 14 58 C15 32 35 14 61 13 Z" fill="rgba(138,90,43,0.05)" stroke="rgba(138,90,43,0.2)" stroke-width="6"/>
+              <path d="M60 22 C82 21 97 38 97 60 C96 82 80 97 59 97" fill="none" stroke="rgba(138,90,43,0.1)" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="110" cy="28" r="3.5" fill="rgba(138,90,43,0.18)"/>
+              <circle cx="116" cy="40" r="2" fill="rgba(138,90,43,0.14)"/>
+              <circle cx="100" cy="16" r="1.8" fill="rgba(138,90,43,0.14)"/>
+            </svg>
+            <svg class="pencil" id="paper-pencil" viewBox="0 0 160 30" hidden>
+              <ellipse cx="86" cy="26" rx="70" ry="3.5" fill="rgba(43,42,51,0.14)"/>
+              <rect x="5" y="5" width="20" height="16" rx="5" fill="#ff9aa8" stroke="#2b2a33" stroke-width="2.5"/>
+              <rect x="21" y="4.5" width="14" height="17" fill="#cfc9bc" stroke="#2b2a33" stroke-width="2.5"/>
+              <path d="M26 5.5 V20.5 M30 5.5 V20.5" stroke="#2b2a33" stroke-width="1.4"/>
+              <rect x="35" y="4.5" width="93" height="17" fill="#ffc145" stroke="#2b2a33" stroke-width="2.5"/>
+              <path d="M36.5 13 H126.5" stroke="#e8a21c" stroke-width="3"/>
+              <path d="M128 4.5 L151 13 L128 21.5 Z" fill="#f4d7a8" stroke="#2b2a33" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M144 10.4 L151 13 L144 15.6 Z" fill="#2b2a33"/>
+            </svg>
+            <svg class="dog-ear" viewBox="0 0 34 34">
+              <path d="M2 32 L32 2 L2 2 Z" fill="#e6dac0" stroke="#2b2a33" stroke-width="3" stroke-linejoin="round"/>
+              <path d="M6 24 L24 6" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <header class="masthead" id="masthead" aria-hidden="true">
+            <div class="ear ear-left">
+              <svg class="burst" viewBox="0 0 100 100">
+                <polygon points="50,2 58,22 76,8 74,30 96,26 82,44 99,56 78,62 88,82 66,76 62,98 50,82 38,98 34,76 12,82 22,62 1,56 18,44 4,26 26,30 24,8 42,22"/>
+                <text x="50" y="58">EXTRA!</text>
+              </svg>
+            </div>
+            <div class="nameplate">The Crazy Crossword Times</div>
+            <div class="ear ear-right">
+              <span class="price-label">Price</span>
+              <span class="price"><svg viewBox="0 0 64 64"><use href="#coffee-cup"/></svg>1 cup</span>
+            </div>
+            <div class="dateline">
+              <span class="dl-vol" id="paper-vol">Vol. I</span>
+              <span class="dl-date" id="paper-date"></span>
+              <span class="dl-edition" id="paper-edition">Level 1 Edition</span>
+            </div>
+          </header>
           <div class="board-wrap" id="board-wrap">
-            <div class="board" id="board">
-              <div class="board-layer" id="board-layer"></div>
-              <div class="grid" id="grid"></div>
+            <div class="puzzle-panel" id="puzzle-panel">
+              <div class="board" id="board">
+                <div class="board-layer" id="board-layer"></div>
+                <div class="grid" id="grid"></div>
+              </div>
             </div>
           </div>
           <button class="coffee-btn" id="coffee-btn" aria-label="Drink a coffee to find a random word">
@@ -149,7 +196,7 @@
           </button>
         </div>
         <aside class="word-bank" aria-label="Words to find">
-          <h3>Words</h3>
+          <h3><small>Wanted</small>Words to Find</h3>
           <ul class="word-list" id="word-list"></ul>
         </aside>
       </div>
@@ -267,6 +314,7 @@
   <script src="js/audio.js"></script>
   <script src="js/effects.js"></script>
   <script src="js/stickers.js"></script>
+  <script src="js/newspaper.js"></script>
   <script src="js/board.js"></script>
   <script src="js/screens.js"></script>
   <script src="js/main.js"></script>
