@@ -60,6 +60,10 @@ body.high-contrast {
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   margin: 0;
@@ -301,7 +305,7 @@ code {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 80px 16px 40px;
+  padding: 72px 16px 32px;
   width: min(440px, 100%);
 }
 
@@ -386,10 +390,91 @@ code {
 .menu-buttons .btn:nth-child(3) { animation-delay: 0.69s; }
 .menu-buttons .btn:nth-child(4) { animation-delay: 0.76s; }
 
-.menu-stars {
-  margin-top: 20px;
-  min-height: 1.4em;
+/* Star sticker collection on the main menu */
+
+.sticker-board {
+  position: relative;
+  width: 100%;
+  height: 150px;
+  margin-top: 22px;
+  animation: fade-up 0.5s 0.85s ease both;
+}
+
+.sticker-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.sticker {
+  position: absolute;
+  overflow: visible;
+  transform: rotate(var(--rot));
+  filter: drop-shadow(0 2px 1.5px rgba(90, 60, 10, 0.3));
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform;
+}
+
+.sticker:hover {
+  transform: rotate(calc(var(--rot) - 8deg)) scale(1.15);
+}
+
+.sticker.flying {
+  z-index: 5;
+  pointer-events: none;
+  filter: drop-shadow(0 14px 14px rgba(90, 60, 10, 0.28));
+}
+
+.sticker-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--ink-soft);
+  font-size: calc(0.95rem * var(--ui-scale));
+  opacity: 0.75;
+}
+
+.sticker-empty svg {
+  width: 54px;
+  height: 54px;
+  fill: none;
+  stroke: var(--locked);
+  stroke-width: 3;
+  stroke-dasharray: 6 5;
+  stroke-linejoin: round;
+}
+
+.sticker-count {
+  position: absolute;
+  right: 0;
+  bottom: -8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px 3px 7px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 2px solid var(--line);
   color: var(--sun-deep);
+  font-variant-numeric: tabular-nums;
+  font-size: calc(0.95rem * var(--ui-scale));
+  z-index: 1;
+}
+
+.sticker-count svg {
+  width: 16px;
+  height: 16px;
+}
+
+.sticker-count.bump {
+  animation: count-bump 0.35s cubic-bezier(0.34, 1.8, 0.64, 1);
+}
+
+@keyframes count-bump {
+  50% { transform: scale(1.25); }
 }
 
 /* ---------- Level select ---------- */

@@ -36,6 +36,7 @@
     });
     document.body.dataset.screen = name;
     if (prev === 'game') CC.Game.deactivate();
+    if (prev === 'menu') CC.Stickers.finish();
     if (name === 'game') {
       CC.Audio.playLevel(CC.Game.level);
       setTimeout(() => current === 'game' && CC.Game.activate(), 380);
@@ -117,12 +118,11 @@
 
   // ---- Main menu ----
 
-  function renderMenu() {
+  function renderMenu(stickerDelay) {
     const next = Save.nextLevel();
     const started = next > 1 || Save.progress.inProgress[1];
     $('#start-sub').textContent = started ? `Continue · Level ${next}` : 'Level 1';
-    const stars = Save.totalStars();
-    $('#menu-stars').textContent = stars ? `${stars} star${stars === 1 ? '' : 's'} earned` : '';
+    CC.Stickers.show(stickerDelay == null ? 550 : stickerDelay);
   }
 
   $('#btn-start').addEventListener('click', () => playLevel(Save.nextLevel()));
@@ -393,6 +393,7 @@
 
   window.addEventListener('resize', () => {
     if (current === 'levels') renderLevelMap();
+    if (current === 'menu') CC.Stickers.relayout();
   });
 
   CC.Screens = {
@@ -400,7 +401,7 @@
       applyContrast();
       syncAudioUi();
       syncScale();
-      renderMenu();
+      renderMenu(1400);
       document.body.dataset.screen = 'menu';
       CC.Audio.playMenu();
     },

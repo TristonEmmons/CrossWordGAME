@@ -27,6 +27,8 @@
       inProgress: {},
       // level number -> music track index
       levelTracks: {},
+      // stars already stuck on the main menu; any beyond this animate in on the next visit
+      menuStarsShown: 0,
     };
   }
 
