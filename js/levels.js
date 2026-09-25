@@ -45,9 +45,11 @@
     return chosen.some((w) => w.includes(word) || w.includes(rev) || word.includes(w) || rev.includes(w));
   }
 
-  function drawWords(config, rng) {
+  // Draws `count` unused library words in the level's length range. Words that overlap
+  // anything in `avoid` (or each other) are skipped so every word has one home on the board.
+  function drawWords(config, rng, count, avoid) {
     const library = window.WORD_LIBRARY || {};
-    const count = rng.int(config.minWords, config.maxWords);
+    const taken = (avoid || []).slice();
     const chosen = [];
     const pools = {};
     for (let len = config.minLen; len <= config.maxLen; len++) {
@@ -63,10 +65,18 @@
       const len = rng.pick(lengths);
       const word = pools[len].pop();
       if (!word) continue;
-      if (overlapsExisting(word, chosen)) continue;
+      if (overlapsExisting(word, taken)) continue;
       chosen.push(word);
+      taken.push(word);
     }
     return chosen;
+  }
+
+  const MIN_BONUS = 1;
+  const MAX_BONUS = 3;
+
+  function drawBonus(config, rng, listed) {
+    return drawWords(config, rng, rng.int(MIN_BONUS, MAX_BONUS), listed);
   }
 
   // Returns a ready-to-play puzzle for the level. The first time a level loads its words
@@ -79,14 +89,22 @@
 
     if (!record) {
       const seed = CC.randomSeed();
-      const words = drawWords(config, CC.makeRng(seed));
-      record = { seed, words };
+      const rng = CC.makeRng(seed);
+      const words = drawWords(config, rng, rng.int(config.minWords, config.maxWords));
+      const bonus = drawBonus(config, rng, words);
+      record = { seed, words, bonus };
       progress.levels[level] = record;
-      CC.Save.markUsed(words);
+      CC.Save.markUsed(words.concat(bonus));
+      CC.Save.saveProgress();
+    } else if (!record.bonus) {
+      // Level saved before bonus words existed. Adding them changes the board, so only
+      // do it when there's no half-finished game on it; otherwise it goes without.
+      record.bonus = progress.inProgress[level] ? [] : drawBonus(config, CC.makeRng(record.seed ^ 0x5bd1e995), record.words);
+      CC.Save.markUsed(record.bonus);
       CC.Save.saveProgress();
     }
 
-    const puzzle = CC.generatePuzzle(record.words, config, record.seed);
+    const puzzle = CC.generatePuzzle(record.words, config, record.seed, record.bonus);
     puzzle.level = level;
     puzzle.config = config;
     return puzzle;

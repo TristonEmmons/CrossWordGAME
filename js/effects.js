@@ -4,6 +4,19 @@
 
   const CC = window.CC;
   const COLORS = ['#ff6b5b', '#1fa3a3', '#ffc145', '#ffffff'];
+  const GOLD = ['#ffc145', '#ffd966', '#fff1bf', '#e8a21c'];
+
+  function drawStar(size) {
+    const r = size / 2;
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + (i * Math.PI) / 5;
+      const rad = i % 2 ? r * 0.45 : r;
+      ctx.lineTo(Math.cos(a) * rad, Math.sin(a) * rad);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
 
   const canvas = document.getElementById('fx-canvas');
   const ctx = canvas.getContext('2d');
@@ -43,6 +56,8 @@
       ctx.rotate(p.rot);
       if (p.shape === 'rect') {
         ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+      } else if (p.shape === 'star') {
+        drawStar(p.size);
       } else {
         ctx.beginPath();
         ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
@@ -68,9 +83,11 @@
   }
 
   CC.Effects = {
-    // Small burst at a point (e.g. the centre of a found word).
-    burst(x, y, count) {
+    // Small burst at a point (e.g. the centre of a found word). `style` 'gold' throws
+    // gold stars instead of mixed confetti.
+    burst(x, y, count, style) {
       const n = count || 26;
+      const gold = style === 'gold';
       for (let i = 0; i < n; i++) {
         const angle = Math.random() * Math.PI * 2;
         const speed = 120 + Math.random() * 260;
@@ -81,9 +98,9 @@
           vy: Math.sin(angle) * speed - 80,
           gravity: 420,
           drag: 0.97,
-          size: 5 + Math.random() * 5,
-          color: COLORS[i % COLORS.length],
-          shape: Math.random() < 0.5 ? 'rect' : 'dot',
+          size: gold ? 7 + Math.random() * 7 : 5 + Math.random() * 5,
+          color: gold ? GOLD[i % GOLD.length] : COLORS[i % COLORS.length],
+          shape: gold ? 'star' : Math.random() < 0.5 ? 'rect' : 'dot',
           rot: Math.random() * 6,
           spin: (Math.random() - 0.5) * 12,
           life: 0.8 + Math.random() * 0.5,

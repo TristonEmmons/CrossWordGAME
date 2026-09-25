@@ -30,6 +30,8 @@
   --found-coffee: rgba(166, 108, 58, 0.34);
   --brew-bg: #f5ebdf;
   --brew-ink: #6b3f1f;
+  --bonus-edge: #d98c0e;
+  --bonus-ink: #5a3600;
   --hint: #1fa3a3;
   --locked: #cfc7ba;
 
@@ -58,6 +60,8 @@ body.high-contrast {
   --found-coffee: rgba(140, 80, 30, 0.6);
   --brew-bg: #ffffff;
   --brew-ink: #000000;
+  --bonus-edge: #8a5200;
+  --bonus-ink: #000000;
   --hint: #0050d0;
   --locked: #9a9a9a;
 }
@@ -939,6 +943,11 @@ body.high-contrast .capsule.found {
   transition: opacity 0.4s ease;
 }
 
+.capsule.reveal-bonus {
+  background: rgba(255, 193, 69, 0.3);
+  border-color: var(--sun-deep);
+}
+
 .capsule.reveal.fading {
   opacity: 0;
 }
@@ -971,6 +980,81 @@ body.high-contrast .capsule.found {
 
 .hint-box.done {
   opacity: 0;
+}
+
+/* Bonus words: gold, dashed outline, with a shimmer sweeping across */
+
+.capsule.bonus {
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255, 222, 120, 0.7), rgba(255, 184, 48, 0.55));
+  border: 2.5px dashed var(--bonus-edge);
+  box-shadow: 0 0 12px 2px rgba(255, 180, 40, 0.55);
+}
+
+.capsule.bonus::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.75) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: bonus-shimmer 3.5s ease-in-out 0.3s infinite;
+}
+
+@keyframes bonus-shimmer {
+  0% { transform: translateX(-100%); }
+  35%, 100% { transform: translateX(100%); }
+}
+
+.capsule.bonus.landing {
+  animation: capsule-land 0.6s ease both;
+}
+
+.cell.bonus-found {
+  color: var(--bonus-ink);
+}
+
+.cell.bonus-pop {
+  animation: bonus-pop 0.6s cubic-bezier(0.34, 1.8, 0.64, 1) both;
+}
+
+@keyframes bonus-pop {
+  0% { transform: scale(1) rotate(0); }
+  40% { transform: scale(1.6) rotate(-8deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+.word.bonus {
+  align-self: flex-start;
+  padding: 2px 10px 2px 8px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffe08a, #ffc145);
+  color: var(--bonus-ink);
+  box-shadow: 0 2px 0 var(--sun-deep);
+}
+
+.word.bonus::before {
+  content: '★ ';
+  color: #fff;
+  text-shadow: 0 1px 0 var(--sun-deep);
+}
+
+.word.bonus.arriving {
+  animation: bonus-arrive 0.6s cubic-bezier(0.34, 1.8, 0.64, 1) both;
+}
+
+@keyframes bonus-arrive {
+  0% { opacity: 0; transform: scale(0.4); }
+  100% { opacity: 1; transform: none; }
+}
+
+.toast.toast-bonus {
+  background: linear-gradient(180deg, #ffd35e, #f0a61c);
+  color: #4a2f00;
+  box-shadow: 0 8px 24px rgba(232, 162, 28, 0.45);
+}
+
+.stats .all-bonus {
+  background: linear-gradient(180deg, #ffe08a, #ffc145);
 }
 
 /* Coffee cup: spend one to have a random word found */

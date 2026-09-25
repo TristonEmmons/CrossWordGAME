@@ -174,9 +174,15 @@
     }
   }
 
-  CC.generatePuzzle = function (inputWords, config, seed) {
+  // `bonusWords` are hidden extras: placed and kept unique like the listed words, but
+  // returned separately so they never appear in the word list.
+  CC.generatePuzzle = function (inputWords, config, seed, bonusWords) {
     const size = config.gridSize;
-    let words = inputWords.map((w) => w.toUpperCase()).filter((w) => w.length <= size);
+    const bonusSet = new Set((bonusWords || []).map((w) => w.toUpperCase()));
+    let words = inputWords
+      .concat(bonusWords || [])
+      .map((w) => w.toUpperCase())
+      .filter((w) => w.length <= size);
     // Longest first: they are the hardest to fit, so place them while the board is empty.
     words.sort((a, b) => b.length - a.length);
 
@@ -210,7 +216,8 @@
     return {
       size,
       grid: result.grid,
-      words: words.slice().sort(),
+      words: words.filter((w) => !bonusSet.has(w)).sort(),
+      bonus: words.filter((w) => bonusSet.has(w)).sort(),
       placements,
     };
   };

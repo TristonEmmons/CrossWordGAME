@@ -273,7 +273,8 @@
     $('#complete-title').textContent = `Level ${result.level} complete!`;
     $('#stat-time').textContent = CC.formatTime(result.time);
     $('#stat-hints').textContent = `${result.hints} of 2`;
-    $('#stat-words').textContent = result.words;
+    $('#stat-bonus').textContent = result.bonusTotal ? `${result.bonusFound} of ${result.bonusTotal}` : '—';
+    $('#stat-bonus').parentElement.classList.toggle('all-bonus', !!result.bonusTotal && result.bonusFound === result.bonusTotal);
     const starsHost = $('#complete-stars');
     starsHost.innerHTML = [1, 2, 3].map(() => `<span class="big-star">${ICONS.star}</span>`).join('');
     const starNodes = CC.$$('.big-star', starsHost);

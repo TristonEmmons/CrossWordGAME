@@ -157,6 +157,12 @@
   }
 
   const SFX = {
+    bonus() {
+      // A quick sparkling run up a pentatonic scale, landing on a bell-like chord.
+      [784, 880, 1047, 1175, 1319, 1568, 1760, 2093].forEach((f, i) => tone(f, i * 0.045, 0.25, 'sine', 0.07));
+      [1047, 1319, 1568, 2093].forEach((f) => tone(f, 0.4, 1.3, 'triangle', 0.06));
+      tone(3136, 0.42, 0.9, 'sine', 0.03);
+    },
     coffee() {
       // Three little bubbly sips.
       glide(300, 520, 0, 0.12, 0.12);

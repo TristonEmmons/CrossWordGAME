@@ -28,7 +28,8 @@
   let puzzle = null;
   let size = 0;
   let cells = []; // DOM nodes, index r * size + c
-  let found = new Map(); // word -> { cells, capsule }
+  let found = new Map(); // listed word -> { cells, capsule }
+  let bonusFound = new Map(); // hidden bonus word -> { cells, capsule }
   let hints = []; // { word, row, col, node }
   let wordItems = new Map(); // word -> <li>
   let cellSize = 32;
@@ -104,6 +105,7 @@
     wordList.textContent = '';
     cells = [];
     found = new Map();
+    bonusFound = new Map();
     hints = [];
     wordItems = new Map();
     foundColor = 0;
@@ -143,6 +145,7 @@
     if (!puzzle) return;
     Save.progress.inProgress[puzzle.level] = {
       found: Array.from(found.entries()).map(([word, f]) => ({ word, cells: f.cells, coffee: f.byCoffee })),
+      bonus: Array.from(bonusFound.entries()).map(([word, f]) => ({ word, cells: f.cells })),
       hints: hints.map((h) => ({ word: h.word, row: h.row, col: h.col })),
       used: hintsUsed(),
       elapsed: currentElapsed(),
@@ -158,6 +161,9 @@
     elapsed = saved.elapsed || 0;
     (saved.found || []).forEach((f) => {
       if (puzzle.placements[f.word] && !found.has(f.word)) markFound(f.word, f.cells, false, f.coffee);
+    });
+    (saved.bonus || []).forEach((f) => {
+      if (puzzle.placements[f.word] && !bonusFound.has(f.word)) markBonus(f.word, f.cells, false);
     });
     (saved.hints || []).forEach((h) => {
       if (!found.has(h.word)) addHintBox(h.word, h.row, h.col, false);
@@ -262,6 +268,44 @@
     else if (streak >= 4) CC.toast(`Unstoppable! ×${streak}`, 'good');
     else if (found.size === Math.ceil(total / 2)) CC.toast('Halfway there!');
     else if (remaining === 1) CC.toast('Just one more!');
+    saveState();
+  }
+
+  // ---- Bonus words: hidden extras that aren't on the list ----
+
+  function markBonus(word, run, animate) {
+    const capsule = CC.el('div', 'capsule bonus');
+    if (animate) capsule.classList.add('landing');
+    layer.insertBefore(capsule, selection.capsule);
+    placeCapsule(capsule, run);
+    bonusFound.set(word, { cells: run, capsule });
+
+    run.forEach(([r, c], i) => {
+      const node = cells[r * size + c];
+      node.classList.add('bonus-found');
+      if (animate) {
+        node.style.animationDelay = i * 60 + 'ms';
+        node.classList.remove('pop', 'bonus-pop');
+        void node.offsetWidth;
+        node.classList.add('bonus-pop');
+      }
+    });
+
+    // It joins the word list, set apart as a gold bonus entry.
+    const li = CC.el('li', 'word bonus', word);
+    if (animate) li.classList.add('arriving');
+    wordList.appendChild(li);
+
+    if (!animate) return;
+    CC.Audio.sfx('bonus');
+    const rect = board.getBoundingClientRect();
+    run.forEach(([r, c], i) => {
+      if (i % 2) return;
+      const [x, y] = cellCenter(r, c);
+      setTimeout(() => CC.Effects.burst(rect.left + x, rect.top + y, 14, 'gold'), i * 60);
+    });
+    CC.toast(`Bonus word! ${word}`, 'bonus');
+    li.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     saveState();
   }
 
@@ -398,11 +442,17 @@
     const text = run.map(([r, c]) => puzzle.grid[r][c]).join('');
     const reversed = text.split('').reverse().join('');
     const word = puzzle.words.find((w) => w === text || w === reversed);
+    const bonus = puzzle.bonus.find((w) => w === text || w === reversed);
 
     if (word && !found.has(word)) {
       capsule.hidden = true;
       // Store the run start-to-end in reading order of the word.
       markFound(word, text === word ? run : run.slice().reverse(), true);
+      return;
+    }
+    if (bonus && !bonusFound.has(bonus)) {
+      capsule.hidden = true;
+      markBonus(bonus, text === bonus ? run : run.slice().reverse(), true);
       return;
     }
 
@@ -422,7 +472,7 @@
       capsule.classList.remove('invalid', 'fading');
     }, 650);
 
-    if (word) {
+    if (word || bonus) {
       CC.toast('Already found that one');
       return;
     }
@@ -580,6 +630,8 @@
         hints: hintCount,
         stars,
         words: puzzle.words.length,
+        bonusFound: bonusFound.size,
+        bonusTotal: puzzle.bonus.length,
         brew,
       });
     }, 700);
@@ -630,8 +682,8 @@
   function reveal() {
     clearTimeout(revealTimer);
     CC.$$('.capsule.reveal', layer).forEach((n) => n.remove());
-    puzzle.words.forEach((word) => {
-      const node = CC.el('div', 'capsule reveal');
+    puzzle.words.concat(puzzle.bonus).forEach((word) => {
+      const node = CC.el('div', 'capsule reveal' + (puzzle.bonus.includes(word) ? ' reveal-bonus' : ''));
       layer.appendChild(node);
       placeCapsule(node, puzzle.placements[word].cells);
     });
