@@ -50,6 +50,8 @@ dun eau ems ere ers eth fay fil fro gan git hae haw het hoy ich ids ifs lac lat 
 luv mig mol mor mot naw nee nom obi ora pap pax pia pom ras rei rem ret rin roc sha sos tau tat
 tod vox wha wis yeh yin zee nil phi psi thy aff ais bod cee dey dup ecu fas fer fey ged hao kos ley
 mem mun mus nth obe pes ria sae shh syn tas tsk wot zig vas vac ump ell baa pus pox dud tut
+
+ado aft asp aye cob cog cur dab din dub ebb fez fob gad gar gnu hap hex ilk imp ire ism jag jane jus kip koi lob lux maw mew moa nab nib nit nix oft ohm orb orc ova ply rah rue sac ska sod tad taj tam tic tun vee vie wad wan wiz yap yew zed
 """.split())
 
 

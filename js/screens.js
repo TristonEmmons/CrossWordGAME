@@ -413,6 +413,37 @@
     renderMenu();
   });
 
+  // ---- Backup: save progress to a file, or load it back ----
+
+  const backupNote = $('#backup-note');
+  $('#btn-backup-save').addEventListener('click', () => {
+    const blob = new Blob([Save.exportBackup()], { type: 'application/json' });
+    const a = document.createElement('a');
+    const day = new Date().toISOString().slice(0, 10);
+    a.href = URL.createObjectURL(blob);
+    a.download = `crazy-crossword-backup-${day}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    backupNote.textContent = 'Backup saved to your Downloads folder.';
+  });
+  const backupFile = $('#backup-file');
+  $('#btn-backup-load').addEventListener('click', () => backupFile.click());
+  backupFile.addEventListener('change', () => {
+    const file = backupFile.files && backupFile.files[0];
+    backupFile.value = '';
+    if (!file) return;
+    file.text().then((text) => {
+      if (!Save.importBackup(text)) {
+        backupNote.textContent = "That file isn't a Crazy Crossword backup. Pick the .json file you saved.";
+        return;
+      }
+      backupNote.textContent = 'Backup restored! Reloading…';
+      setTimeout(() => location.reload(), 700);
+    });
+  });
+
   function openSettings() {
     if (current === 'game') CC.Game.pause();
     openModal('modal-settings');

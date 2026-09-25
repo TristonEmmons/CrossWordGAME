@@ -75,6 +75,7 @@
     found.forEach((f) => placeCapsule(f.capsule, f.cells));
     hints.forEach(placeHintBox);
     if (selection.capsule && selection.cells.length) placeCapsule(selection.capsule, selection.cells);
+    if (selection.anchorNode) placeCapsule(selection.anchorNode, [selection.anchor]);
     CC.Newspaper.layout();
   }
 
@@ -119,6 +120,8 @@
     wordItems = new Map();
     foundColor = 0;
     selection.capsule = null;
+    selection.anchor = null;
+    selection.anchorNode = null;
 
     const frag = document.createDocumentFragment();
     for (let r = 0; r < size; r++) {
@@ -329,7 +332,27 @@
     pending: null, // latest pointer position awaiting the next animation frame
     frame: 0,
     capsule: null,
+    anchor: null, // [r, c] of a tapped first letter, waiting for a second tap
+    anchorNode: null,
+    flash: 0, // bumps with each wrong guess so a stale fade-out can't hide a new selection
   };
+
+  // Tap-to-select: tap the first letter, then the last. Easier than dragging on a trackpad.
+  function setAnchor(cell) {
+    clearAnchor();
+    selection.anchor = cell;
+    const node = CC.el('div', 'capsule anchor');
+    layer.insertBefore(node, selection.capsule);
+    placeCapsule(node, [cell]);
+    selection.anchorNode = node;
+    CC.Audio.sfx('tap');
+  }
+
+  function clearAnchor() {
+    if (selection.anchorNode) selection.anchorNode.remove();
+    selection.anchor = null;
+    selection.anchorNode = null;
+  }
 
   function pointToCell(clientX, clientY) {
     const rect = board.getBoundingClientRect();
@@ -394,6 +417,7 @@
     selection.pointerId = e.pointerId;
     selection.start = [p.r, p.c];
     const capsule = selection.capsule;
+    selection.flash++;
     capsule.classList.remove('invalid', 'fading');
     capsule.hidden = false;
     setSelectedCells([[p.r, p.c]]);
@@ -421,6 +445,29 @@
     }
     const run = selection.cells.slice();
     clearSelection();
+    if (run.length === 1) {
+      const [r, c] = run[0];
+      const anchor = selection.anchor;
+      if (!anchor) {
+        setAnchor([r, c]);
+      } else if (anchor[0] === r && anchor[1] === c) {
+        clearAnchor(); // tapping the same letter again cancels
+      } else {
+        // Second tap: the line from the first tap to here, snapped straight.
+        selection.start = anchor;
+        const [x, y] = cellCenter(r, c);
+        const line = runFromDrag(x, y);
+        selection.start = null;
+        clearAnchor();
+        selection.capsule.hidden = false;
+        placeCapsule(selection.capsule, line);
+        evaluate(line);
+        return;
+      }
+      selection.capsule.hidden = true;
+      return;
+    }
+    clearAnchor();
     evaluate(run);
   }
 
@@ -467,6 +514,8 @@
       return;
     }
 
+    const flash = ++selection.flash;
+    capsule.classList.remove('fading');
     capsule.classList.add('invalid');
     run.forEach(([r, c]) => {
       const node = cells[r * size + c];
@@ -476,9 +525,10 @@
       node.classList.add('shake');
     });
     setTimeout(() => {
-      capsule.classList.add('fading');
+      if (flash === selection.flash && selection.pointerId === null) capsule.classList.add('fading');
     }, 260);
     setTimeout(() => {
+      if (flash !== selection.flash) return;
       if (selection.pointerId === null) capsule.hidden = true;
       capsule.classList.remove('invalid', 'fading');
     }, 650);

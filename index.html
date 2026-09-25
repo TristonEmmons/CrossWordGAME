@@ -227,7 +227,7 @@
       </div>
       <ol class="howto-steps">
         <li><b>Words are hidden in the grid</b> — find them all to win!</li>
-        <li><b>Click and hold</b> the first letter, <b>drag</b> to the last letter, then <b>let go</b>.</li>
+        <li><b>Click and hold</b> the first letter, <b>drag</b> to the last letter, then <b>let go</b>. Or just <b>click the first letter, then click the last</b>.</li>
         <li>Words can run across, down, and — in later levels — backwards and diagonally.</li>
         <li><b>Stuck?</b> Each level gives you <b>2 hints</b>. A hint lights up a 5×5 area where a word begins.</li>
         <li><b>Coffee break:</b> tap the coffee cup in the corner of the puzzle to have one word found for you. Finishing new levels brews more coffee, and it brews faster when you use fewer hints.</li>
@@ -265,6 +265,16 @@
       <label class="toggle"><input type="checkbox" id="set-contrast"><span class="switch"></span>High contrast</label>
       <label class="toggle"><input type="checkbox" id="set-wordlist"><span class="switch"></span>Show word list</label>
       <label class="toggle"><input type="checkbox" id="set-sfx"><span class="switch"></span>Sound effects</label>
+
+      <div class="setting backup">
+        <label>Backup</label>
+        <div class="backup-row">
+          <button class="btn btn-small" id="btn-backup-save">Save a backup</button>
+          <button class="btn btn-small" id="btn-backup-load">Restore a backup</button>
+          <input type="file" id="backup-file" accept=".json,application/json" hidden>
+        </div>
+        <p class="note" id="backup-note">Saves stars, levels, coffee and settings to a file you can load on any computer.</p>
+      </div>
 
       <div class="settings-footer">
         <button class="btn btn-danger btn-small" id="btn-reset">Reset progress</button>

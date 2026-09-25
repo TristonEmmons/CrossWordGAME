@@ -47,7 +47,10 @@
     }
   }
 
+  let frozen = false; // set while a restored backup reloads the page, so nothing overwrites it
+
   function write(key, value) {
+    if (frozen) return;
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (e) {
@@ -139,6 +142,33 @@
       progress.coffee += cups;
       this.saveProgress();
       return { cups, before, after };
+    },
+
+    // Backup file contents: everything needed to carry progress to another browser.
+    exportBackup() {
+      this.saveProgress();
+      return JSON.stringify(
+        { game: 'crazy-crossword', version: 1, savedAt: new Date().toISOString(), progress, settings },
+        null,
+        1
+      );
+    },
+
+    // Restores a backup made by exportBackup(). Returns false if the file isn't one.
+    importBackup(text) {
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        return false;
+      }
+      if (!data || data.game !== 'crazy-crossword' || !data.progress || typeof data.progress.completed !== 'object') {
+        return false;
+      }
+      write(PROGRESS_KEY, data.progress);
+      if (data.settings) write(SETTINGS_KEY, data.settings);
+      frozen = true;
+      return true;
     },
 
     totalStars() {
