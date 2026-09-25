@@ -286,9 +286,46 @@
         if (i < result.stars) CC.Audio.sfx('star');
       }, 600 + i * 450);
     });
-    $('#complete-reward').hidden = !result.coffeeEarned;
+    showBrew(result.brew);
     $('#complete-note').textContent =
       result.stars === 3 ? 'Solved without hints — perfect!' : 'Solve it without hints for 3 stars.';
+  }
+
+  // Coffee brewing bar: fills by this level's share, and pours a cup when it tops out.
+  let brewTimers = [];
+  function showBrew(brew) {
+    const box = $('#complete-brew');
+    const fill = $('#brew-fill');
+    const label = $('#brew-label');
+    const note = $('#brew-note');
+    brewTimers.forEach(clearTimeout);
+    brewTimers = [];
+    box.hidden = !brew;
+    if (!brew) return;
+
+    box.classList.remove('poured', 'double');
+    label.textContent = 'Brewing your next coffee';
+    note.hidden = false;
+    fill.style.transition = 'none';
+    fill.style.transform = `scaleX(${brew.before})`;
+    void fill.offsetWidth;
+    fill.style.transition = '';
+
+    brewTimers.push(
+      setTimeout(() => {
+        fill.style.transform = `scaleX(${brew.cups ? 1 : brew.after})`;
+      }, 1900)
+    );
+    if (!brew.cups) return;
+    brewTimers.push(
+      setTimeout(() => {
+        box.classList.add('poured');
+        if (brew.cups > 1) box.classList.add('double');
+        label.textContent = brew.cups > 1 ? 'Double shot! +2 coffee cups' : '+1 coffee cup';
+        note.hidden = true;
+        CC.Audio.sfx('coffee');
+      }, 2900)
+    );
   }
 
   $('#btn-next').addEventListener('click', () => playLevel(Save.nextLevel()));

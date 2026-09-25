@@ -29,8 +29,10 @@
       levelTracks: {},
       // stars already stuck on the main menu; any beyond this animate in on the next visit
       menuStarsShown: 0,
-      // coffee cups in hand; each one finds a random word. +1 per level finished the first time
+      // coffee cups in hand; each one finds a random word
       coffee: 3,
+      // progress (0..1) toward brewing the next cup; see brewCoffee()
+      coffeeBrew: 0,
     };
   }
 
@@ -50,6 +52,11 @@
       // Private mode or storage full: the game still works, it just won't remember.
     }
   }
+
+  // How much of a cup one newly finished level brews, by hints used in it:
+  // no hints -> a cup every 2 levels, 1 hint -> every 3, 2 hints -> every 4.
+  const BREW_PER_LEVEL = [1 / 2, 1 / 3, 1 / 4];
+  const DOUBLE_SHOT_CHANCE = 1 / 12; // a finished brew occasionally pours two cups
 
   const progress = Object.assign(emptyProgress(), read(PROGRESS_KEY) || {});
   const settings = Object.assign({}, DEFAULT_SETTINGS, read(SETTINGS_KEY) || {});
@@ -102,6 +109,23 @@
       delete progress.inProgress[level];
       this.saveProgress();
       return !prev;
+    },
+
+    // Brews coffee for a level finished for the first time. Returns how many cups were
+    // poured (0, 1 or 2) and the brew level before and after, for the progress bar.
+    brewCoffee(hints) {
+      const before = progress.coffeeBrew || 0;
+      let after = before + BREW_PER_LEVEL[Math.min(Math.max(hints, 0), BREW_PER_LEVEL.length - 1)];
+      let cups = 0;
+      if (after >= 1 - 1e-9) {
+        after = Math.max(0, after - 1);
+        if (after < 1e-9) after = 0;
+        cups = Math.random() < DOUBLE_SHOT_CHANCE ? 2 : 1;
+      }
+      progress.coffeeBrew = after;
+      progress.coffee += cups;
+      this.saveProgress();
+      return { cups, before, after };
     },
 
     totalStars() {

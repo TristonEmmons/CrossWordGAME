@@ -508,7 +508,7 @@
   function useCoffee() {
     if (!active || paused || coffeeBusy || !puzzle) return;
     if (Save.progress.coffee <= 0) {
-      CC.toast('Out of coffee. Finish a new level to earn a cup.');
+      CC.toast('Out of coffee. Finish new levels to brew more.');
       coffeeBtn.classList.remove('nope');
       void coffeeBtn.offsetWidth;
       coffeeBtn.classList.add('nope');
@@ -571,10 +571,8 @@
     const hintCount = usedHintCount;
     const stars = Math.max(1, 3 - hintCount);
     const firstTime = Save.recordCompletion(puzzle.level, stars, time, hintCount);
-    if (firstTime) {
-      Save.progress.coffee++;
-      Save.saveProgress();
-    }
+    // Only new levels brew coffee, so replaying easy levels can't farm cups.
+    const brew = firstTime ? Save.brewCoffee(hintCount) : null;
     setTimeout(() => {
       CC.Screens.showComplete({
         level: puzzle.level,
@@ -582,7 +580,7 @@
         hints: hintCount,
         stars,
         words: puzzle.words.length,
-        coffeeEarned: firstTime ? 1 : 0,
+        brew,
       });
     }, 700);
   }
