@@ -807,4 +807,28 @@
     showComplete,
     isGameScreen: () => current === 'game' && !openModals.length,
   };
+
+  // ---- Hidden developer key: Page Up = instant rank-up ----
+  // Outside a level, marks every level up to the next rank's unlock level as finished
+  // (3 stars, no hints), then returns to the main menu, where the usual promotion plays.
+  // Not mentioned anywhere in the game.
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'PageUp' || e.repeat || current === 'game' || openModals.length) return;
+    e.preventDefault();
+    const { next } = CC.Ranks.progress();
+    if (!next || !next.ready) {
+      CC.toast(`Already ${CC.Ranks.current().name}: top rank`);
+      return;
+    }
+    const P = Save.progress;
+    for (let level = Save.nextLevel(); level <= next.levels; level++) {
+      if (P.completed[level]) continue;
+      CC.loadLevel(level); // draws the level's words like a real play, so later levels stay fresh
+      P.completed[level] = { stars: 3, bestTime: 60000, hints: 0 };
+      delete P.inProgress[level];
+    }
+    Save.saveProgress();
+    if (current === 'menu') renderMenu(0);
+    else showScreen('menu');
+  });
 })();
