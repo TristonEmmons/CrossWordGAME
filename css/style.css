@@ -333,11 +333,141 @@ code {
 }
 
 .menu-inner {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 72px 16px 32px;
   width: min(440px, 100%);
+}
+
+/* Mascot: sits above the title on narrow screens, beside it on wide ones */
+.mascot-spot {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.mascot {
+  width: 108px;
+  height: 108px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  animation: mascot-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mascot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 90%;
+  filter: drop-shadow(0 6px 8px rgba(90, 50, 20, 0.22));
+  animation: mascot-bob 3.2s ease-in-out 1s infinite;
+  user-select: none;
+}
+
+.mascot:hover img {
+  animation-play-state: paused;
+  transform: rotate(-6deg) scale(1.05);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mascot.hop img {
+  animation: mascot-hop 0.7s cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+
+.mascot:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 4px;
+  border-radius: 24px;
+}
+
+@keyframes mascot-in {
+  from { opacity: 0; transform: translateY(-30px) scale(0.5) rotate(-15deg); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes mascot-bob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-6px) rotate(2deg); }
+}
+
+@keyframes mascot-hop {
+  0% { transform: none; }
+  20% { transform: scale(1.12, 0.86); }
+  50% { transform: translateY(-26px) rotate(-10deg) scale(0.95, 1.08); }
+  75% { transform: translateY(0) scale(1.06, 0.92); }
+  100% { transform: none; }
+}
+
+.mascot-bubble {
+  position: absolute;
+  left: calc(50% + 50px);
+  top: 4px;
+  z-index: 3;
+  width: max-content;
+  max-width: 190px;
+  margin: 0;
+  padding: 9px 13px;
+  border: 2.5px solid var(--ink);
+  border-radius: 16px 16px 16px 4px;
+  background: #fff;
+  box-shadow: 3px 3px 0 var(--ink);
+  font-size: calc(0.95rem * var(--ui-scale));
+  line-height: 1.3;
+  color: var(--ink);
+  transform-origin: 0 100%;
+}
+
+.mascot-bubble.pop {
+  animation: bubble-pop 0.4s cubic-bezier(0.34, 1.7, 0.64, 1) both;
+}
+
+@keyframes bubble-pop {
+  from { opacity: 0; transform: scale(0.4); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Wide screens: the mascot stands to the left of the title, bubble above its head. */
+@media (min-width: 760px) {
+  .mascot-spot {
+    position: absolute;
+    left: -215px;
+    top: 70px;
+    margin: 0;
+  }
+
+  .mascot {
+    width: 190px;
+    height: 190px;
+  }
+
+  .mascot-bubble {
+    left: 30px;
+    top: -58px;
+    max-width: 210px;
+    border-radius: 16px 16px 16px 4px;
+  }
+}
+
+/* Phones: bubble to the mascot's left so it doesn't cover it. */
+@media (max-width: 759px) {
+  .menu-inner {
+    padding-top: 60px;
+  }
+
+  .mascot-bubble {
+    left: auto;
+    right: calc(50% + 44px);
+    top: 10px;
+    max-width: min(150px, calc(50vw - 74px));
+    border-radius: 16px 16px 4px 16px;
+    transform-origin: 100% 100%;
+  }
 }
 
 .logo {

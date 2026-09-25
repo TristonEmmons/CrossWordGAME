@@ -125,7 +125,64 @@
     const started = next > 1 || Save.progress.inProgress[1];
     $('#start-sub').textContent = started ? `Continue · Level ${next}` : 'Level 1';
     CC.Stickers.show(stickerDelay == null ? 550 : stickerDelay);
+    mascotGreet(stickerDelay == null ? 700 : 1500);
   }
+
+  // ---- Mascot: says hello when the menu opens, hops and chats when clicked ----
+
+  const mascot = $('#mascot');
+  const bubble = $('#mascot-bubble');
+  let bubbleTimer = 0;
+  let lastLine = '';
+
+  const MASCOT_LINES = [
+    'Fresh words, brewed daily!',
+    'I spy with my little eye… letters!',
+    'Take your time. I’ll stay warm.',
+    'Psst! Some words hide backwards.',
+    'Every grid hides a secret or two.',
+    'Another cup? Don’t mind if I do!',
+    'You’re a natural word-finder!',
+    'Sip, search, smile. Repeat.',
+  ];
+
+  function greeting() {
+    const h = new Date().getHours();
+    const part = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+    const next = Save.nextLevel();
+    return next > 1 ? `${part}! Level ${next} is ready for you.` : `${part}! Ready to find some words?`;
+  }
+
+  function say(text, ms) {
+    clearTimeout(bubbleTimer);
+    bubble.textContent = text;
+    bubble.hidden = false;
+    bubble.classList.remove('pop');
+    void bubble.offsetWidth;
+    bubble.classList.add('pop');
+    bubbleTimer = setTimeout(() => {
+      bubble.hidden = true;
+    }, ms || 4200);
+  }
+
+  function mascotGreet(delay) {
+    clearTimeout(bubbleTimer);
+    bubble.hidden = true;
+    bubbleTimer = setTimeout(() => say(greeting()), delay);
+  }
+
+  mascot.addEventListener('click', () => {
+    mascot.classList.remove('hop');
+    void mascot.offsetWidth;
+    mascot.classList.add('hop');
+    CC.Audio.sfx('coffee');
+    let line;
+    do {
+      line = MASCOT_LINES[Math.floor(Math.random() * MASCOT_LINES.length)];
+    } while (line === lastLine);
+    lastLine = line;
+    say(line);
+  });
 
   $('#btn-start').addEventListener('click', () => playLevel(Save.nextLevel()));
   $('#btn-levels').addEventListener('click', () => showScreen('levels'));
@@ -494,7 +551,7 @@
 
   // Soft click sound on every button press.
   document.addEventListener('click', (e) => {
-    if (e.target.closest('button:not(.hint-btn):not(.mute-btn):not(.coffee-btn)')) CC.Audio.sfx('tap');
+    if (e.target.closest('button:not(.hint-btn):not(.mute-btn):not(.coffee-btn):not(.mascot)')) CC.Audio.sfx('tap');
   });
 
   window.addEventListener('resize', () => {

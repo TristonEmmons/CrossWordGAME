@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&family=Abril+Fatface&family=Grenze+Gotisch:wght@700;800&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/png" href="assets/img/favicon-64.png">
+  <link rel="apple-touch-icon" href="assets/img/app-icon-180.png">
 </head>
 <body data-screen="menu">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -65,6 +67,12 @@
     <!-- ============ Main menu ============ -->
     <section class="screen active" id="screen-menu" aria-hidden="false">
       <div class="menu-inner">
+        <div class="mascot-spot">
+          <button class="mascot" id="mascot" aria-label="Say hi to the coffee cup">
+            <img src="assets/img/mascot.png" alt="" width="512" height="512" draggable="false">
+          </button>
+          <p class="mascot-bubble" id="mascot-bubble" aria-live="polite" hidden></p>
+        </div>
         <h1 class="logo" aria-label="Crazy Crossword">
           <span class="logo-row">
             <span class="tile t1">C</span><span class="tile t2">R</span><span class="tile t3">A</span><span class="tile t4">Z</span><span class="tile t5">Y</span>

@@ -36,7 +36,8 @@ To add more songs, drop the files into `assets/music/` and add their names to `a
 | `js/screens.js` | Menu, level map, pause, settings, level complete |
 | `data/word-library.json` | 5,000-word library in buckets by length (3–12 letters) |
 | `data/word-library.js` | The same data as a script, so the game works from `file://` |
-| `tools/` | Scripts that rebuild the word library |
+| `assets/img/` | The coffee-cup mascot, plus its favicon and app-icon sizes |
+| `tools/` | Scripts that rebuild the word library | and cut the mascot out of its background (`cut_mascot.py`) |
 
 ## Difficulty
 
