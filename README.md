@@ -1,2 +1,66 @@
-# CrossWordGAME
-Crossword puzzle game
+# Crazy Crossword
+
+A browser word-search game. Words are hidden in a big letter grid. Drag from the first letter to the last to find each one.
+
+## Play
+
+Open `index.html` in any modern browser. It needs no build step and no server, so you can just double-click the file. You can also serve the folder (`python3 -m http.server`) or put it on any static host.
+
+Progress, settings and the list of words already used are saved in the browser's `localStorage`.
+
+## Adding music
+
+1. Drop 5–10 audio files (`.mp3`, `.ogg`, …) into `assets/music/`.
+2. List them in `assets/music/tracks.js`:
+   ```js
+   window.MUSIC_TRACKS = ['lofi-1.mp3', 'lofi-2.mp3', 'rainy-cafe.mp3'];
+   ```
+
+The menu screens shuffle through the tracks without playing the same one twice in a row. Each level gets one track, remembered for that level, which loops while you play. Switching between the two crossfades.
+
+## Project layout
+
+| Path | What it does |
+| --- | --- |
+| `index.html` | Screens, modals and script order |
+| `css/style.css` | All styling, animations, high-contrast theme |
+| `js/util.js` | DOM helpers, seeded RNG, direction vectors |
+| `js/storage.js` | Save data and settings (`localStorage`) |
+| `js/levels.js` | Difficulty curve and word drawing from the library |
+| `js/generator.js` | Backtracking grid generator, filler weighting, duplicate removal |
+| `js/board.js` | Grid rendering, drag selection, hints, timer, streaks |
+| `js/audio.js` | Music playlist/looping/crossfade, mute and volume, synthesized sound effects |
+| `js/effects.js` | Canvas confetti and toasts |
+| `js/screens.js` | Menu, level map, pause, settings, level complete |
+| `data/word-library.json` | 5,000-word library in buckets by length (3–12 letters) |
+| `data/word-library.js` | The same data as a script, so the game works from `file://` |
+| `tools/` | Scripts that rebuild the word library |
+
+## Difficulty
+
+| Levels | Grid | Words | Length | Directions |
+| --- | --- | --- | --- | --- |
+| 1–5 | 20×20 | 8–10 | 3–6 | across, down |
+| 6–10 | 23×23 | 10–13 | 4–7 | + backwards |
+| 11–15 | 26×26 | 13–16 | 5–8 | + diagonals (down-right, up-right) |
+| 16–20 | 29×29 | 16–20 | 6–9 | same |
+| 21–25 | 32×32 | 20–24 | 7–10 | all 8 directions |
+| 26+ | 35×35 | 24–30, rising slowly | 7–12 | all 8 directions |
+
+Change the curve in `TIERS` in `js/levels.js`.
+
+**Word selection.** The first time a level loads, its words are drawn at random from the library. Words used by earlier levels are skipped. The level's word list and random seed are saved, so replaying a level rebuilds the same board.
+
+**Stars.** You get 3 stars with no hints, 2 with one hint and 1 with two. The time is shown on the level-complete card, but it doesn't change the stars.
+
+## Editing the word library
+
+Edit `data/word-library.json` directly, then regenerate the script copy:
+
+```sh
+python3 tools/json_to_js.py
+```
+
+To rebuild the library from scratch, see the docstring in `tools/build_word_library.py`. It uses word-frequency data from `wordfreq`, the ENABLE dictionary and a profanity filter. The script also contains a hand-picked exclusion list.
+
+The 3-letter bucket stops at 456 words. English runs out of common 3-letter words before 500, and the rest would be abbreviations and oddities.
