@@ -40,6 +40,8 @@
       daily: {},
       // Lifetime counters for the stats page (see initStats for older saves)
       stats: null,
+      // highest coffee rank reached (see js/ranks.js)
+      rank: 1,
     };
   }
 

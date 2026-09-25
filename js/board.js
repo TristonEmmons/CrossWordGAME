@@ -699,10 +699,12 @@
       // Only new levels brew coffee, so replaying easy levels can't farm cups.
       brew = firstTime ? Save.brewCoffee(hintCount) : null;
     }
+    const promotion = CC.Ranks.checkPromotion();
     setTimeout(() => {
       CC.Screens.showComplete({
         level: puzzle.level,
         daily,
+        promotion,
         time,
         hints: hintCount,
         stars,

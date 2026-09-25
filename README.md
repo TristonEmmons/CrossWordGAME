@@ -31,6 +31,7 @@ To add more songs, drop the files into `assets/music/` and add their names to `a
 | `js/board.js` | Grid rendering, drag selection, hints, timer, streaks |
 | `js/audio.js` | Music playlist/looping/crossfade, mute and volume, synthesized sound effects |
 | `js/effects.js` | Canvas confetti and toasts |
+| `js/ranks.js` | Coffee ranks: the 10-rank ladder, badge art, and rank-up checks |
 | `js/stickers.js` | Main-menu star sticker pile and its fly-in animation |
 | `js/newspaper.js` | The newspaper page around the puzzle: paper and desk textures, masthead dateline, and the news columns that fill the margins |
 | `js/levelmap.js` | The world map: chapter worlds, landmarks, signposts, the road, level coins and the mascot |
@@ -39,6 +40,10 @@ To add more songs, drop the files into `assets/music/` and add their names to `a
 | `data/word-library.js` | The same data as a script, so the game works from `file://` |
 | `assets/img/` | The coffee-cup mascot, plus its favicon and app-icon sizes |
 | `tools/` | Scripts that rebuild the word library and cut the mascot out of its background (`cut_mascot.py`) |
+
+## Ranks
+
+Players climb a ladder of 10 coffee ranks by completing numbered levels. Everyone starts at **House Blend** ("Fresh off the press."). The current rank shows on the main menu and the Stats page, and a promotion appears on the level-complete card. All rank data lives in `RANKS` in `js/ranks.js`. Ranks 2–10 are listed there but not yet playable.
 
 ## Today's Paper
 

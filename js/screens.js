@@ -126,6 +126,7 @@
     const started = next > 1 || Save.progress.inProgress[1];
     $('#start-sub').textContent = started ? `Continue · Level ${next}` : 'Level 1';
     renderDailyButton();
+    renderRankChip();
     CC.Stickers.show(stickerDelay == null ? 550 : stickerDelay);
     mascotGreet(stickerDelay == null ? 700 : 1500);
   }
@@ -188,6 +189,45 @@
   });
 
   $('#btn-start').addEventListener('click', () => playLevel(Save.nextLevel()));
+
+  // ---- Coffee rank ----
+
+  function renderRankChip() {
+    const rank = CC.Ranks.current();
+    $('#rank-chip-badge').innerHTML = CC.Ranks.badgeHtml(rank);
+    $('#rank-chip-badge').style.setProperty('--rank-color', rank.color);
+    $('#rank-chip-number').textContent = `Rank ${rank.number} of ${CC.Ranks.total}`;
+    $('#rank-chip-name').textContent = rank.name;
+  }
+
+  $('#rank-chip').addEventListener('click', () => showScreen('stats'));
+
+  // Rank panel for the stats page: badge, name, motto, progress, and the ladder.
+  function rankPanelHtml() {
+    const { current, next, fraction, levelsToGo } = CC.Ranks.progress();
+    let nextLine;
+    if (!next) nextLine = 'Top rank reached. Legendary!';
+    else if (levelsToGo == null) nextLine = 'Next rank coming soon';
+    else nextLine = `${levelsToGo} more level${levelsToGo === 1 ? '' : 's'} to ${next.name}`;
+    const ladder = CC.Ranks.all
+      .map((r) => {
+        const state = r.number < current.number ? 'past' : r.number === current.number ? 'now' : 'ahead';
+        return `<li class="rung ${state}" title="${r.number <= current.number ? r.name : 'Rank ' + r.number}">${r.number}</li>`;
+      })
+      .join('');
+    return `
+      <section class="sp-rank" style="--rank-color:${current.color}">
+        <div class="rank-seal">${CC.Ranks.badgeHtml(current)}</div>
+        <div class="rank-info">
+          <span class="rank-kicker">Your rank · ${current.number} of ${CC.Ranks.total}</span>
+          <h4>${current.name}</h4>
+          <p class="rank-motto">“${current.description}”</p>
+          <div class="rank-bar"><span style="transform:scaleX(${fraction})"></span></div>
+          <p class="rank-next">${nextLine}</p>
+          <ol class="rank-ladder" aria-label="Coffee ranks">${ladder}</ol>
+        </div>
+      </section>`;
+  }
 
   // ---- Today's Paper ----
 
@@ -289,6 +329,7 @@
         <span class="sp-date">${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</span>
       </header>
       <h3 class="sp-headline">${statsHeadline(st, levels)}</h3>
+      ${rankPanelHtml()}
       <div class="stat-tiles">
         ${tile(fmtNum(st.wordsFound), 'Words found', 't-coral')}
         ${tile(fmtNum(levels), levels === 1 ? 'Level finished' : 'Levels finished', 't-teal')}
@@ -383,6 +424,13 @@
       }, 600 + i * 450);
     });
     showBrew(result.brew);
+    const promo = $('#complete-promotion');
+    promo.hidden = !result.promotion;
+    if (result.promotion) {
+      const r = result.promotion;
+      promo.style.setProperty('--rank-color', r.color);
+      promo.innerHTML = `<span class="rank-badge">${CC.Ranks.badgeHtml(r)}</span><span><small>Promoted!</small><b>${r.name}</b></span>`;
+    }
     const note = $('#complete-note');
     note.textContent = result.stars >= 3 ? 'Solved without hints — perfect!' : 'Solve it without hints for 3 stars.';
     if (daily) {
