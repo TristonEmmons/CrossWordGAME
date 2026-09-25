@@ -85,6 +85,11 @@
             <span>Start Game</span>
             <small id="start-sub">Level 1</small>
           </button>
+          <button class="btn btn-daily" id="btn-daily">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="6" width="22" height="21" rx="2.5" fill="#fffaf1" stroke="currentColor" stroke-width="2.4"/><path d="M26 11 H29 V24.5 A2.5 2.5 0 0 1 26.5 27" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><rect x="8" y="10" width="14" height="4" rx="1" fill="#ff6b5b"/><path d="M8 18 H22 M8 22 H18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            <span class="daily-text"><span>Today’s Paper</span><small id="daily-sub">Easy · 5 words</small></span>
+            <span class="daily-badge" id="daily-badge" hidden></span>
+          </button>
           <button class="btn" id="btn-levels">Levels</button>
           <button class="btn" id="btn-howto">How to Play</button>
           <button class="btn btn-quiet" id="btn-menu-settings">Settings</button>
@@ -230,6 +235,7 @@
         <li><b>Click and hold</b> the first letter, <b>drag</b> to the last letter, then <b>let go</b>. Or just <b>click the first letter, then click the last</b>.</li>
         <li>Words can run across, down, and — in later levels — backwards and diagonally.</li>
         <li><b>Stuck?</b> Each level gives you <b>2 hints</b>. A hint lights up a 5×5 area where a word begins.</li>
+        <li><b>Today’s Paper:</b> a quick, easy puzzle waits on the main menu every day. Solve it for a free coffee and keep your streak going.</li>
         <li><b>Coffee break:</b> tap the coffee cup in the corner of the puzzle to have one word found for you. Finishing new levels brews more coffee, and it brews faster when you use fewer hints.</li>
       </ol>
       <button class="btn btn-primary" data-close data-autofocus>Got it</button>

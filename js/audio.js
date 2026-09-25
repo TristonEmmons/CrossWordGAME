@@ -213,7 +213,8 @@
       const map = CC.Save.progress.levelTracks;
       if (map[level] == null || map[level] >= tracks.length) {
         // Rotate through the list so consecutive levels never share a song.
-        map[level] = (level - 1) % tracks.length;
+        const n = CC.isDaily(level) ? CC.dailyNumber(level) : level;
+        map[level] = (n - 1) % tracks.length;
         CC.Save.saveProgress();
       }
       if (mode === 'level' && currentTrack === map[level]) return;

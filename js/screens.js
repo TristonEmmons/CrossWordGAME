@@ -124,6 +124,7 @@
     const next = Save.nextLevel();
     const started = next > 1 || Save.progress.inProgress[1];
     $('#start-sub').textContent = started ? `Continue · Level ${next}` : 'Level 1';
+    renderDailyButton();
     CC.Stickers.show(stickerDelay == null ? 550 : stickerDelay);
     mascotGreet(stickerDelay == null ? 700 : 1500);
   }
@@ -150,6 +151,7 @@
     const h = new Date().getHours();
     const part = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
     const next = Save.nextLevel();
+    if (!Save.progress.daily[CC.todayKey()]) return `${part}! Today’s paper just arrived. Only 5 words!`;
     return next > 1 ? `${part}! Level ${next} is ready for you.` : `${part}! Ready to find some words?`;
   }
 
@@ -185,6 +187,25 @@
   });
 
   $('#btn-start').addEventListener('click', () => playLevel(Save.nextLevel()));
+
+  // ---- Today's Paper ----
+
+  function renderDailyButton() {
+    const done = Save.progress.daily[CC.todayKey()];
+    const streak = Save.dailyStreak();
+    const btn = $('#btn-daily');
+    btn.classList.toggle('done', !!done);
+    $('#daily-sub').textContent = done
+      ? 'Solved today · new one tomorrow'
+      : Save.progress.inProgress[CC.dailyLevelId()]
+        ? 'Easy · 5 words · keep going'
+        : 'Easy · 5 words';
+    const badge = $('#daily-badge');
+    badge.hidden = streak < 2;
+    badge.textContent = `${streak}-day streak`;
+  }
+
+  $('#btn-daily').addEventListener('click', () => playLevel(CC.dailyLevelId()));
   $('#btn-levels').addEventListener('click', () => showScreen('levels'));
   $('#btn-howto').addEventListener('click', () => openModal('modal-howto'));
   $('#btn-menu-settings').addEventListener('click', openSettings);
@@ -216,7 +237,7 @@
   function openPause() {
     if (current !== 'game' || isOpen('modal-pause') || isOpen('modal-complete')) return;
     CC.Game.pause();
-    $('#pause-level').textContent = 'Level ' + CC.Game.level;
+    $('#pause-level').textContent = CC.isDaily(CC.Game.level) ? 'Today’s Paper' : 'Level ' + CC.Game.level;
     openModal('modal-pause');
   }
 
@@ -244,7 +265,9 @@
     completeTimers.forEach(clearTimeout);
     completeTimers = [];
     $('#complete-note').classList.remove('bonus-note');
-    $('#complete-title').textContent = `Level ${result.level} complete!`;
+    const daily = result.daily;
+    $('#complete-title').textContent = daily ? 'Today’s paper solved!' : `Level ${result.level} complete!`;
+    $('#btn-next').textContent = daily ? 'Main Menu' : 'Next Level';
     $('#stat-time').textContent = CC.formatTime(result.time);
     $('#stat-hints').textContent = `${result.hints} of 2`;
     $('#stat-bonus').textContent = result.bonusTotal ? `${result.bonusFound} of ${result.bonusTotal}` : '—';
@@ -265,6 +288,10 @@
     showBrew(result.brew);
     const note = $('#complete-note');
     note.textContent = result.stars >= 3 ? 'Solved without hints — perfect!' : 'Solve it without hints for 3 stars.';
+    if (daily) {
+      const streak = daily.streak > 1 ? ` ${daily.streak}-day streak!` : '';
+      note.textContent = (daily.firstTime ? 'Today’s coffee is on the house: +1 cup.' : 'Come back tomorrow for a new paper.') + streak;
+    }
 
     // The 4th star is never mentioned up front: it just appears after the other three.
     if (result.stars >= 4) {
@@ -323,7 +350,14 @@
     );
   }
 
-  $('#btn-next').addEventListener('click', () => playLevel(Save.nextLevel()));
+  $('#btn-next').addEventListener('click', () => {
+    if (CC.isDaily(CC.Game.level)) {
+      closeAllModals();
+      showScreen('menu');
+    } else {
+      playLevel(Save.nextLevel());
+    }
+  });
   $('#btn-complete-levels').addEventListener('click', () => {
     closeAllModals();
     showScreen('levels');

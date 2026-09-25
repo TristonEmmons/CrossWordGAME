@@ -47,14 +47,14 @@
 
   // Draws `count` unused library words in the level's length range. Words that overlap
   // anything in `avoid` (or each other) are skipped so every word has one home on the board.
-  function drawWords(config, rng, count, avoid) {
+  function drawWords(config, rng, count, avoid, ignoreUsed) {
     const library = window.WORD_LIBRARY || {};
     const taken = (avoid || []).slice();
     const chosen = [];
     const pools = {};
     for (let len = config.minLen; len <= config.maxLen; len++) {
       const bucket = (library[len] || []).map((w) => w.toUpperCase());
-      const fresh = bucket.filter((w) => !CC.Save.isUsed(w));
+      const fresh = ignoreUsed ? bucket : bucket.filter((w) => !CC.Save.isUsed(w));
       // If a bucket is ever exhausted, fall back to reusing words rather than failing.
       pools[len] = rng.shuffle(fresh.length ? fresh : bucket.slice());
     }
@@ -79,10 +79,35 @@
     return drawWords(config, rng, rng.int(MIN_BONUS, MAX_BONUS), listed);
   }
 
+  // ---- Today's Paper: one small, easy puzzle per calendar day ----
+
+  const DAILY = { gridSize: 15, minWords: 5, maxWords: 5, minLen: 3, maxLen: 6, dirs: ['E', 'S'] };
+  const DAILY_PREFIX = 'daily-';
+
+  CC.dailyLevelId = (dateKey) => DAILY_PREFIX + (dateKey || CC.todayKey());
+  CC.isDaily = (level) => typeof level === 'string' && level.indexOf(DAILY_PREFIX) === 0;
+  // A stable number for a daily puzzle (for seeds, music and newspaper copy).
+  CC.dailyNumber = (level) => Number(String(level).slice(DAILY_PREFIX.length).replace(/-/g, '')) || 1;
+
+  // Everyone gets the same paper on the same day: the words come only from the date,
+  // not from which words this player has already seen.
+  function loadDaily(level) {
+    const seed = CC.dailyNumber(level) * 2654435761 >>> 0;
+    const rng = CC.makeRng(seed);
+    const words = drawWords(DAILY, rng, DAILY.minWords, [], true);
+    const bonus = drawWords(DAILY, rng, 1, words, true);
+    const puzzle = CC.generatePuzzle(words, DAILY, seed, bonus);
+    puzzle.level = level;
+    puzzle.config = DAILY;
+    puzzle.daily = true;
+    return puzzle;
+  }
+
   // Returns a ready-to-play puzzle for the level. The first time a level loads its words
   // are drawn from the library (never repeating across levels) and remembered, so the
   // same level always rebuilds the same board.
   CC.loadLevel = function (level) {
+    if (CC.isDaily(level)) return loadDaily(level);
     const config = CC.levelConfig(level);
     const progress = CC.Save.progress;
     let record = progress.levels[level];

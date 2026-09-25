@@ -40,6 +40,10 @@ To add more songs, drop the files into `assets/music/` and add their names to `a
 | `assets/img/` | The coffee-cup mascot, plus its favicon and app-icon sizes |
 | `tools/` | Scripts that rebuild the word library and cut the mascot out of its background (`cut_mascot.py`) |
 
+## Today's Paper
+
+A small daily puzzle on the main menu: a 15×15 grid with 5 easy words (3–6 letters, across and down only) and one hidden bonus word. Everyone gets the same paper all day, since it's generated from the date, and a new one arrives at local midnight. The first solve each day earns a coffee cup and extends the daily streak. It doesn't affect level progress or stars.
+
 ## Difficulty
 
 | Levels | Grid | Words | Length | Directions |

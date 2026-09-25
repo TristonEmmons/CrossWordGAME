@@ -508,15 +508,18 @@
 
   CC.Newspaper = {
     // A fresh edition for a level: new dateline and stories, and the paper spins in.
-    newIssue(levelNumber, wordTotal) {
+    newIssue(levelId, wordTotal) {
+      const daily = CC.isDaily(levelId);
+      // Copy and layout are seeded by a number; the daily paper uses its date.
+      const levelNumber = daily ? CC.dailyNumber(levelId) % 100000 : levelId;
       level = levelNumber;
       total = wordTotal;
       found = 0;
       lastKey = '';
       document.getElementById('paper-date').textContent = formatDate(new Date());
-      document.getElementById('paper-edition').textContent = `Level ${levelNumber} Edition`;
-      document.getElementById('paper-vol').textContent = `No. ${levelNumber}`;
-      panel.dataset.label = `Word Search · No. ${levelNumber}`;
+      document.getElementById('paper-edition').textContent = daily ? 'Daily Edition' : `Level ${levelNumber} Edition`;
+      document.getElementById('paper-vol').textContent = daily ? 'Today' : `No. ${levelNumber}`;
+      panel.dataset.label = daily ? 'Today’s Puzzle · Easy' : `Word Search · No. ${levelNumber}`;
       area.classList.remove('spin-in');
       coffeeBtn.classList.remove('drop-in');
       void area.offsetWidth;

@@ -148,7 +148,7 @@
       wordList.appendChild(li);
     });
 
-    levelLabel.textContent = 'Level ' + puzzle.level;
+    levelLabel.textContent = puzzle.daily ? 'Today’s Paper' : 'Level ' + puzzle.level;
     selection.capsule = CC.el('div', 'capsule selecting');
     selection.capsule.hidden = true;
     layer.appendChild(selection.capsule);
@@ -682,12 +682,21 @@
     const hintCount = usedHintCount;
     // No hints = 3 stars; no hints plus any bonus word = a surprise 4th star.
     const stars = hintCount === 0 ? (bonusFound.size > 0 ? 4 : 3) : Math.max(1, 3 - hintCount);
-    const firstTime = Save.recordCompletion(puzzle.level, stars, time, hintCount);
-    // Only new levels brew coffee, so replaying easy levels can't farm cups.
-    const brew = firstTime ? Save.brewCoffee(hintCount) : null;
+    let brew = null;
+    let daily = null;
+    if (puzzle.daily) {
+      // The daily paper has its own reward (a cup on the first solve) and streak.
+      daily = Save.recordDaily(puzzle.level.slice('daily-'.length), stars, time, hintCount);
+      renderCoffee();
+    } else {
+      const firstTime = Save.recordCompletion(puzzle.level, stars, time, hintCount);
+      // Only new levels brew coffee, so replaying easy levels can't farm cups.
+      brew = firstTime ? Save.brewCoffee(hintCount) : null;
+    }
     setTimeout(() => {
       CC.Screens.showComplete({
         level: puzzle.level,
+        daily,
         time,
         hints: hintCount,
         stars,

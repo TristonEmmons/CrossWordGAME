@@ -35,6 +35,8 @@
       coffee: 3,
       // progress (0..1) toward brewing the next cup; see brewCoffee()
       coffeeBrew: 0,
+      // Today's Paper results: 'YYYY-MM-DD' -> { stars, time, hints }
+      daily: {},
     };
   }
 
@@ -74,6 +76,16 @@
     if (Array.isArray(progress.stickerLog) && progress.stickerLog.length === total) return;
     const shiny = levels.filter((c) => c.stars >= 4).length;
     progress.stickerLog = new Array(total - shiny).fill('gold').concat(new Array(shiny).fill('shiny'));
+  })();
+
+  // Yesterday's unfinished paper can't be finished any more; drop its leftovers.
+  (function tidyOldDailies() {
+    const today = 'daily-' + CC.todayKey();
+    [progress.inProgress, progress.levelTracks].forEach((map) => {
+      Object.keys(map || {}).forEach((k) => {
+        if (k.indexOf('daily-') === 0 && k !== today) delete map[k];
+      });
+    });
   })();
 
   CC.Save = {
@@ -169,6 +181,31 @@
       if (data.settings) write(SETTINGS_KEY, data.settings);
       frozen = true;
       return true;
+    },
+
+    // Records a solved daily paper. The first solve of the day pours a coffee cup.
+    recordDaily(dateKey, stars, time, hints) {
+      const prev = progress.daily[dateKey];
+      progress.daily[dateKey] = prev
+        ? { stars: Math.max(prev.stars, stars), time: Math.min(prev.time, time), hints: Math.min(prev.hints, hints) }
+        : { stars, time, hints };
+      delete progress.inProgress['daily-' + dateKey];
+      if (!prev) progress.coffee += 1;
+      this.saveProgress();
+      return { firstTime: !prev, streak: this.dailyStreak() };
+    },
+
+    // Days in a row with the paper solved, counting back from today (or from
+    // yesterday, if today's isn't done yet, so the streak isn't lost by breakfast).
+    dailyStreak() {
+      const d = new Date();
+      if (!progress.daily[CC.todayKey(d)]) d.setDate(d.getDate() - 1);
+      let streak = 0;
+      while (progress.daily[CC.todayKey(d)]) {
+        streak++;
+        d.setDate(d.getDate() - 1);
+      }
+      return streak;
     },
 
     totalStars() {

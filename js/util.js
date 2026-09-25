@@ -42,6 +42,13 @@
 
   CC.randomSeed = () => (Math.random() * 4294967296) >>> 0;
 
+  // Local date as YYYY-MM-DD, so daily things change at the player's own midnight.
+  CC.todayKey = function (date) {
+    const d = date || new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  };
+
   CC.formatTime = function (ms) {
     const total = Math.max(0, Math.round(ms / 1000));
     const h = Math.floor(total / 3600);
