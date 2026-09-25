@@ -11,6 +11,32 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body data-screen="menu">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="cup-body" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#ff8f82"/>
+        <stop offset="0.45" stop-color="#ff6b5b"/>
+        <stop offset="1" stop-color="#d9493a"/>
+      </linearGradient>
+      <radialGradient id="cup-brew" cx="45%" cy="40%" r="60%">
+        <stop offset="0" stop-color="#7b4524"/>
+        <stop offset="1" stop-color="#4a2812"/>
+      </radialGradient>
+      <symbol id="coffee-cup" viewBox="0 0 64 64">
+        <ellipse cx="31" cy="54" rx="25" ry="6.5" fill="#fbf5ec" stroke="#d8c6ae" stroke-width="1.5"/>
+        <ellipse cx="31" cy="53" rx="15" ry="3.4" fill="#efe3d1"/>
+        <path d="M46 31 C58 29.5 58 45.5 43.5 44.5" fill="none" stroke="#d9493a" stroke-width="5" stroke-linecap="round"/>
+        <path d="M12 25 L50 25 C50 36 47 47 38.5 51 L23.5 51 C15 47 12 36 12 25 Z" fill="url(#cup-body)"/>
+        <path d="M17 30.5 C17 38 19 43.5 22.5 47" fill="none" stroke="#fff" stroke-opacity="0.5" stroke-width="2.4" stroke-linecap="round"/>
+        <ellipse cx="31" cy="25" rx="19" ry="5.2" fill="#fff6f0" stroke="#d9493a" stroke-width="1.2"/>
+        <g style="opacity: var(--brew-opacity, 1)">
+          <ellipse cx="31" cy="25.6" rx="16" ry="3.9" fill="url(#cup-brew)"/>
+          <ellipse cx="31" cy="25.8" rx="12.5" ry="2.8" fill="#9a6036" opacity="0.8"/>
+          <path d="M31 27.4 C28 25.9 27.6 24.3 29.3 24 C30.3 23.9 30.8 24.5 31 25 C31.2 24.5 31.7 23.9 32.7 24 C34.4 24.3 34 25.9 31 27.4 Z" fill="#f3d6b0"/>
+        </g>
+      </symbol>
+    </defs>
+  </svg>
   <canvas id="fx-canvas" aria-hidden="true"></canvas>
   <div id="toasts" aria-live="polite"></div>
 
@@ -85,11 +111,24 @@
         </div>
       </header>
       <div class="game-body">
-        <div class="board-wrap" id="board-wrap">
-          <div class="board" id="board">
-            <div class="board-layer" id="board-layer"></div>
-            <div class="grid" id="grid"></div>
+        <div class="board-area">
+          <div class="board-wrap" id="board-wrap">
+            <div class="board" id="board">
+              <div class="board-layer" id="board-layer"></div>
+              <div class="grid" id="grid"></div>
+            </div>
           </div>
+          <button class="coffee-btn" id="coffee-btn" aria-label="Drink a coffee to find a random word">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <g class="steam">
+                <path d="M24 19 C21 15 27 12 24 7"/>
+                <path d="M31 18 C28 14 34 10 31 4"/>
+                <path d="M38 19 C35 15 41 12 38 7"/>
+              </g>
+              <use href="#coffee-cup"/>
+            </svg>
+            <span class="coffee-count" id="coffee-count">3</span>
+          </button>
         </div>
         <aside class="word-bank" aria-label="Words to find">
           <h3>Words</h3>
@@ -117,6 +156,7 @@
         <li><b>Click and hold</b> the first letter, <b>drag</b> to the last letter, then <b>let go</b>.</li>
         <li>Words can run across, down, and — in later levels — backwards and diagonally.</li>
         <li><b>Stuck?</b> Each level gives you <b>2 hints</b>. A hint lights up a 5×5 area where a word begins.</li>
+        <li><b>Coffee break:</b> tap the coffee cup in the corner of the puzzle to have one word found for you. You earn a new cup for every level you finish.</li>
       </ol>
       <button class="btn btn-primary" data-close data-autofocus>Got it</button>
     </div>
@@ -180,6 +220,10 @@
       <h2 id="complete-title">Level complete!</h2>
       <div class="big-stars" id="complete-stars"></div>
       <p class="sub" id="complete-note"></p>
+      <p class="reward" id="complete-reward" hidden>
+        <svg viewBox="0 0 64 64" aria-hidden="true"><use href="#coffee-cup"/></svg>
+        <span>+1 coffee cup</span>
+      </p>
       <dl class="stats">
         <div><dt>Time</dt><dd id="stat-time">0:00</dd></div>
         <div><dt>Hints used</dt><dd id="stat-hints">0</dd></div>

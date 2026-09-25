@@ -136,7 +136,31 @@
     osc.stop(t0 + duration + 0.05);
   }
 
+  // A tone that slides between two pitches (for the coffee "sip").
+  function glide(f0, f1, startOffset, duration, gain) {
+    const ac = audioCtx();
+    if (!ac) return;
+    const t0 = ac.currentTime + startOffset;
+    const osc = ac.createOscillator();
+    const g = ac.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(f0, t0);
+    osc.frequency.exponentialRampToValueAtTime(f1, t0 + duration);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(gain, t0 + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+    osc.connect(g).connect(ac.destination);
+    osc.start(t0);
+    osc.stop(t0 + duration + 0.05);
+  }
+
   const SFX = {
+    coffee() {
+      // Three little bubbly sips.
+      glide(300, 520, 0, 0.12, 0.12);
+      glide(340, 600, 0.11, 0.12, 0.1);
+      glide(380, 700, 0.22, 0.14, 0.09);
+    },
     found() {
       [523.25, 659.25, 783.99].forEach((f, i) => tone(f, i * 0.07, 0.35, 'triangle', 0.16));
     },

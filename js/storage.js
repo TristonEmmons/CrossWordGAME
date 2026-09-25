@@ -29,6 +29,8 @@
       levelTracks: {},
       // stars already stuck on the main menu; any beyond this animate in on the next visit
       menuStarsShown: 0,
+      // coffee cups in hand; each one finds a random word. +1 per level finished the first time
+      coffee: 3,
     };
   }
 
@@ -89,6 +91,7 @@
       return level <= this.nextLevel();
     },
 
+    // Returns true the first time a level is completed.
     recordCompletion(level, stars, time, hints) {
       const prev = progress.completed[level];
       progress.completed[level] = {
@@ -98,6 +101,7 @@
       };
       delete progress.inProgress[level];
       this.saveProgress();
+      return !prev;
     },
 
     totalStars() {

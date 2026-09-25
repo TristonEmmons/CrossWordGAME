@@ -286,6 +286,7 @@
         if (i < result.stars) CC.Audio.sfx('star');
       }, 600 + i * 450);
     });
+    $('#complete-reward').hidden = !result.coffeeEarned;
     $('#complete-note').textContent =
       result.stars === 3 ? 'Solved without hints — perfect!' : 'Solve it without hints for 3 stars.';
   }
@@ -388,7 +389,7 @@
 
   // Soft click sound on every button press.
   document.addEventListener('click', (e) => {
-    if (e.target.closest('button:not(.hint-btn):not(.mute-btn)')) CC.Audio.sfx('tap');
+    if (e.target.closest('button:not(.hint-btn):not(.mute-btn):not(.coffee-btn)')) CC.Audio.sfx('tap');
   });
 
   window.addEventListener('resize', () => {

@@ -11,6 +11,7 @@
   const STREAK_WINDOW_MS = 15000;
   const REVEAL_MS = 5000;
   const FOUND_TINTS = 4; // number of capsule colour variants in CSS
+  const COFFEE_CLEARANCE = 84; // px kept free in the board box's corner for the coffee button
 
   const wrap = document.getElementById('board-wrap');
   const board = document.getElementById('board');
@@ -42,10 +43,17 @@
 
   // ---- Layout ----
 
+  // Keeps the coffee button's bottom-left corner clear: either leave room at both sides
+  // (board centred) or at the bottom (board pinned to the top), whichever keeps letters bigger.
   function computeCellSize() {
     const rect = wrap.getBoundingClientRect();
     const pad = 16;
-    const fit = Math.floor(Math.min(rect.width - pad, rect.height - pad) / size);
+    const w = rect.width - pad;
+    const h = rect.height - pad;
+    const beside = Math.min(w - 2 * COFFEE_CLEARANCE, h);
+    const below = Math.min(w, h - COFFEE_CLEARANCE);
+    wrap.classList.toggle('pin-top', below > beside);
+    const fit = Math.floor(Math.max(beside, below) / size);
     const base = CC.clamp(fit, 14, 64);
     return Math.max(12, Math.round(base * Save.settings.letterScale));
   }
@@ -134,7 +142,7 @@
   function saveState() {
     if (!puzzle) return;
     Save.progress.inProgress[puzzle.level] = {
-      found: Array.from(found.entries()).map(([word, f]) => ({ word, cells: f.cells })),
+      found: Array.from(found.entries()).map(([word, f]) => ({ word, cells: f.cells, coffee: f.byCoffee })),
       hints: hints.map((h) => ({ word: h.word, row: h.row, col: h.col })),
       used: hintsUsed(),
       elapsed: currentElapsed(),
@@ -149,7 +157,7 @@
     if (!saved) return;
     elapsed = saved.elapsed || 0;
     (saved.found || []).forEach((f) => {
-      if (puzzle.placements[f.word] && !found.has(f.word)) markFound(f.word, f.cells, false);
+      if (puzzle.placements[f.word] && !found.has(f.word)) markFound(f.word, f.cells, false, f.coffee);
     });
     (saved.hints || []).forEach((h) => {
       if (!found.has(h.word)) addHintBox(h.word, h.row, h.col, false);
@@ -198,12 +206,15 @@
     progressFill.style.transform = `scaleX(${found.size / total})`;
   }
 
-  function markFound(word, run, animate) {
-    const capsule = CC.el('div', `capsule found tint-${foundColor++ % FOUND_TINTS}`);
+  // `byCoffee` marks words handed over by a coffee cup: they get a latte-coloured
+  // highlight and don't count toward streaks.
+  function markFound(word, run, animate, byCoffee) {
+    const tint = byCoffee ? 'coffee' : `tint-${foundColor++ % FOUND_TINTS}`;
+    const capsule = CC.el('div', `capsule found ${tint}`);
     if (animate) capsule.classList.add('landing');
     layer.insertBefore(capsule, selection.capsule);
     placeCapsule(capsule, run);
-    found.set(word, { cells: run, capsule });
+    found.set(word, { cells: run, capsule, byCoffee: !!byCoffee });
 
     run.forEach(([r, c], i) => {
       const node = cells[r * size + c];
@@ -232,9 +243,11 @@
     CC.Effects.burst(rect.left + mx, rect.top + my, 24);
     if (li) li.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 
-    const now = performance.now();
-    streak = now - lastFoundAt < STREAK_WINDOW_MS ? streak + 1 : 1;
-    lastFoundAt = now;
+    if (!byCoffee) {
+      const now = performance.now();
+      streak = now - lastFoundAt < STREAK_WINDOW_MS ? streak + 1 : 1;
+      lastFoundAt = now;
+    }
 
     const total = puzzle.words.length;
     const remaining = total - found.size;
@@ -243,7 +256,8 @@
       finish();
       return;
     }
-    if (streak === 2) CC.toast('Nice streak!', 'good');
+    if (byCoffee) CC.toast(`Coffee found ${word}`, 'coffee');
+    else if (streak === 2) CC.toast('Nice streak!', 'good');
     else if (streak === 3) CC.toast('On a roll!', 'good');
     else if (streak >= 4) CC.toast(`Unstoppable! ×${streak}`, 'good');
     else if (found.size === Math.ceil(total / 2)) CC.toast('Halfway there!');
@@ -475,6 +489,64 @@
 
   hintButtons.forEach((btn) => btn.addEventListener('click', useHint));
 
+  // ---- Coffee: spend a cup to have one random word found ----
+
+  const coffeeBtn = document.getElementById('coffee-btn');
+  const coffeeCount = document.getElementById('coffee-count');
+  let coffeeBusy = false;
+
+  function renderCoffee() {
+    const cups = Save.progress.coffee;
+    coffeeCount.textContent = cups;
+    coffeeBtn.classList.toggle('empty', cups <= 0);
+    coffeeBtn.setAttribute(
+      'aria-label',
+      cups > 0 ? `Drink a coffee to find a random word. ${cups} cup${cups === 1 ? '' : 's'} left` : 'Out of coffee'
+    );
+  }
+
+  function useCoffee() {
+    if (!active || paused || coffeeBusy || !puzzle) return;
+    if (Save.progress.coffee <= 0) {
+      CC.toast('Out of coffee. Finish a new level to earn a cup.');
+      coffeeBtn.classList.remove('nope');
+      void coffeeBtn.offsetWidth;
+      coffeeBtn.classList.add('nope');
+      return;
+    }
+    if (!puzzle.words.some((w) => !found.has(w))) return;
+
+    coffeeBusy = true;
+    Save.progress.coffee--;
+    Save.saveProgress();
+    renderCoffee();
+    coffeeCount.classList.remove('bump');
+    void coffeeCount.offsetWidth;
+    coffeeCount.classList.add('bump');
+    coffeeBtn.classList.remove('sipping');
+    void coffeeBtn.offsetWidth;
+    coffeeBtn.classList.add('sipping');
+    CC.Audio.sfx('coffee');
+
+    // Pick after the sip so a word found by hand in the meantime isn't wasted.
+    setTimeout(() => {
+      coffeeBusy = false;
+      const unfound = puzzle.words.filter((w) => !found.has(w));
+      if (!unfound.length || !active) {
+        Save.progress.coffee++;
+        Save.saveProgress();
+        renderCoffee();
+        return;
+      }
+      const word = unfound[Math.floor(Math.random() * unfound.length)];
+      markFound(word, puzzle.placements[word].cells, true, true);
+      const f = found.get(word);
+      if (f) f.capsule.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+    }, 450);
+  }
+
+  coffeeBtn.addEventListener('click', useCoffee);
+
   // ---- Level complete ----
 
   function finish() {
@@ -483,9 +555,20 @@
     const time = elapsed;
     const hintCount = usedHintCount;
     const stars = Math.max(1, 3 - hintCount);
-    Save.recordCompletion(puzzle.level, stars, time, hintCount);
+    const firstTime = Save.recordCompletion(puzzle.level, stars, time, hintCount);
+    if (firstTime) {
+      Save.progress.coffee++;
+      Save.saveProgress();
+    }
     setTimeout(() => {
-      CC.Screens.showComplete({ level: puzzle.level, time, hints: hintCount, stars, words: puzzle.words.length });
+      CC.Screens.showComplete({
+        level: puzzle.level,
+        time,
+        hints: hintCount,
+        stars,
+        words: puzzle.words.length,
+        coffeeEarned: firstTime ? 1 : 0,
+      });
     }, 700);
   }
 
@@ -549,6 +632,7 @@
       layout();
       restore();
       renderHintButtons();
+      renderCoffee();
       updateCounter();
       renderClock();
       applyWordListSetting();
