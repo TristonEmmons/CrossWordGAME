@@ -1,5 +1,9 @@
-// List the music files in this folder (5–10 lobby/lofi tracks). The menu screens
-// shuffle through them; each level is given one of them to loop.
-// Example:
-//   window.MUSIC_TRACKS = ['lofi-morning.mp3', 'rainy-cafe.mp3', 'slow-sunday.ogg'];
-window.MUSIC_TRACKS = [];
+// Music files in this folder. The menu screens shuffle through all of them; each
+// level loops one of them (levels rotate through the list so back-to-back levels
+// sound different). Add more files here and they join the rotation.
+window.MUSIC_TRACKS = [
+  'crossword-calm.mp3',
+  'coffee-shop-loop.mp3',
+  'puzzle-playtime.mp3',
+  'velvet-stains.mp3',
+];

@@ -7,7 +7,7 @@
   const SETTINGS_KEY = 'crazyCrossword.settings.v1';
 
   const DEFAULT_SETTINGS = {
-    volume: 0.6, // 0..1
+    volume: 0.5, // 0..1
     muted: false,
     sfx: true,
     letterScale: 1, // multiplier on the auto-fit cell size

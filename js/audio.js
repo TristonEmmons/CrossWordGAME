@@ -21,7 +21,7 @@
   let lastMenuTrack = -1;
   let fadeFrame = 0;
   let needsUnlock = false;
-  let lastVolume = settings.volume > 0 ? settings.volume : 0.6;
+  let lastVolume = settings.volume > 0 ? settings.volume : 0.5;
   const listeners = [];
 
   function effectiveVolume() {
@@ -86,12 +86,14 @@
     runFade();
   }
 
+  // Random track, skipping the last menu track and whatever is playing right now
+  // (e.g. the level song you just left) when there are enough tracks to choose from.
   function randomMenuTrack() {
     if (tracks.length <= 1) return 0;
-    let idx;
-    do {
-      idx = Math.floor(Math.random() * tracks.length);
-    } while (idx === lastMenuTrack);
+    const avoid = new Set([lastMenuTrack]);
+    if (tracks.length > 2) avoid.add(currentTrack);
+    const options = tracks.map((_, i) => i).filter((i) => !avoid.has(i));
+    const idx = options[Math.floor(Math.random() * options.length)];
     lastMenuTrack = idx;
     return idx;
   }
@@ -204,10 +206,17 @@
       }
       const map = CC.Save.progress.levelTracks;
       if (map[level] == null || map[level] >= tracks.length) {
-        map[level] = Math.floor(Math.random() * tracks.length);
+        // Rotate through the list so consecutive levels never share a song.
+        map[level] = (level - 1) % tracks.length;
         CC.Save.saveProgress();
       }
       if (mode === 'level' && currentTrack === map[level]) return;
+      // The menu happens to be playing this level's song: keep it going, just loop it.
+      if (currentTrack === map[level] && !slots[active].paused) {
+        mode = 'level';
+        slots[active].loop = true;
+        return;
+      }
       mode = 'level';
       switchTo(map[level], true);
     },
@@ -234,7 +243,7 @@
       if (this.muted) {
         settings.muted = false;
         // Restore the previous level instead of jumping to full volume.
-        if (settings.volume === 0) settings.volume = lastVolume || 0.6;
+        if (settings.volume === 0) settings.volume = lastVolume || 0.5;
       } else {
         settings.muted = true;
       }

@@ -8,15 +8,15 @@ Open `index.html` in any modern browser. It needs no build step and no server, s
 
 Progress, settings and the list of words already used are saved in the browser's `localStorage`.
 
-## Adding music
+## Music
 
-1. Drop 5–10 audio files (`.mp3`, `.ogg`, …) into `assets/music/`.
-2. List them in `assets/music/tracks.js`:
-   ```js
-   window.MUSIC_TRACKS = ['lofi-1.mp3', 'lofi-2.mp3', 'rainy-cafe.mp3'];
-   ```
+Four tracks ship in `assets/music/`: Crossword Calm, Coffee Shop Loop, Puzzle Playtime and Velvet Stains. Music starts on the first click or key press, since browsers block sound until then.
 
-The menu screens shuffle through the tracks without playing the same one twice in a row. Each level gets one track, remembered for that level, which loops while you play. Switching between the two crossfades.
+- **Menu screens** shuffle through all tracks. The shuffle never plays the same song twice in a row, or the song you just heard in a level.
+- **Levels** each loop one track, rotating through the list so back-to-back levels sound different. The assignment is remembered per level.
+- Switching between the menus and a level crossfades. If both use the same song, it keeps playing without restarting.
+
+To add more songs, drop the files into `assets/music/` and add their names to `assets/music/tracks.js`.
 
 ## Project layout
 
