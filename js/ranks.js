@@ -53,6 +53,26 @@
       <path d="M24 24.6 C28 23.4 33 26.4 38 24.4" fill="none" stroke="#f3d39a" stroke-width="1.6" stroke-linecap="round"/>
       <path d="M21 35 V41" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
     </svg>`,
+
+    // Cappuccino: a wide cup of milky coffee with a latte-art heart (like the mascot's) and a dusting of
+    // cocoa, set on a saucer beside a folded copy of the morning paper.
+    cappuccino: `<svg viewBox="0 0 64 64" aria-hidden="true">
+      <g transform="rotate(-8 50 36)">
+        <path d="M40 17 H60 V51 H40 Z" fill="#fffaf1" stroke="#2b2a33" stroke-width="2.6" stroke-linejoin="round"/>
+        <path d="M43 21.5 H57" stroke="#2b2a33" stroke-width="2.6"/>
+        <path d="M43 26 H57 M43 29.5 H57" stroke="#9c9489" stroke-width="1.4"/>
+      </g>
+      <ellipse cx="29" cy="53" rx="25" ry="5.5" fill="#fffaf1" stroke="#2b2a33" stroke-width="3"/>
+      <path d="M48 32 C58 31 58 45 46 44" fill="none" stroke="#2b2a33" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M48 32 C55 32 55 42 46 42" fill="none" stroke="#fffaf1" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M8 27 H50 L47 42 A9 9 0 0 1 38 50 H20 A9 9 0 0 1 11 42 Z" fill="#fffaf1" stroke="#2b2a33" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M9.5 33 H48.8" stroke="#b07a4f" stroke-width="2.6"/>
+      <ellipse cx="29" cy="27" rx="21" ry="5.5" fill="#f1dfc4" stroke="#2b2a33" stroke-width="3"/>
+      <ellipse cx="29" cy="27" rx="16" ry="3.8" fill="#b98755"/>
+      <path d="M29 30 C23 27.6 21.5 24.6 24.6 24.2 C26.8 24 28.4 25.2 29 26.2 C29.6 25.2 31.2 24 33.4 24.2 C36.5 24.6 35 27.6 29 30 Z" fill="#fbf3e6"/>
+      <circle cx="14" cy="25.5" r="0.9" fill="#7a4a28"/><circle cx="43" cy="26" r="0.9" fill="#7a4a28"/><circle cx="41" cy="29" r="0.8" fill="#7a4a28"/>
+      <path d="M14 36 V42" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+    </svg>`,
   };
 
   // Small extras worn by the menu mascot. A rank lists the extras it wears in `mascot`;
@@ -74,6 +94,17 @@
         <ellipse cx="118" cy="150" rx="15" ry="21" fill="#e0b44c" stroke="#1e1b22" stroke-width="5"/>
         <path d="M118 131 C109 142 127 158 118 169" fill="none" stroke="#1e1b22" stroke-width="4.5" stroke-linecap="round"/>
         <ellipse cx="112" cy="141" rx="3.5" ry="6" fill="#fff4cf" opacity="0.9"/>
+      </g>`,
+
+    // A folded morning paper propped against the saucer on the right.
+    paper: `
+      <g transform="translate(-22 -14) rotate(10 430 400)">
+        <path d="M384 334 H474 V458 H384 Z" fill="#f4ecdc" stroke="#2b2a33" stroke-width="7" stroke-linejoin="round"/>
+        <path d="M384 334 L396 322 H486 V446 L474 458" fill="#e6dcc8" stroke="#2b2a33" stroke-width="7" stroke-linejoin="round"/>
+        <path d="M396 356 H462" stroke="#2b2a33" stroke-width="9" stroke-linecap="round"/>
+        <path d="M394 372 H464" stroke="#2b2a33" stroke-width="3"/>
+        <rect x="396" y="384" width="28" height="26" fill="#c9bda8" stroke="#2b2a33" stroke-width="3"/>
+        <path d="M432 388 H462 M432 398 H462 M432 408 H462 M396 422 H462 M396 432 H462 M396 442 H448" stroke="#8e8577" stroke-width="4" stroke-linecap="round"/>
       </g>`,
   };
 
@@ -118,7 +149,19 @@
       mascot: ['beret', 'beanPin'],
       ready: true,
     },
-    { id: 'cappuccino', number: 4, name: 'Cappuccino', ready: false },
+    {
+      id: 'cappuccino',
+      number: 4,
+      name: 'Cappuccino',
+      description: 'A seasoned solver with good taste.',
+      levels: 15,
+      badge: 'cappuccino',
+      color: '#8a5a3b',
+      accent: '#f1dfc4',
+      trim: '#e0b44c',
+      mascot: ['beret', 'beanPin', 'paper'],
+      ready: true,
+    },
     { id: 'cafe-mocha', number: 5, name: 'Café Mocha', ready: false },
     { id: 'vienna-roast', number: 6, name: 'Vienna Roast', ready: false },
     { id: 'kona-reserve', number: 7, name: 'Kona Reserve', ready: false },
