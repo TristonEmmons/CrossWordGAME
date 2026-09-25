@@ -33,11 +33,12 @@ To add more songs, drop the files into `assets/music/` and add their names to `a
 | `js/effects.js` | Canvas confetti and toasts |
 | `js/stickers.js` | Main-menu star sticker pile and its fly-in animation |
 | `js/newspaper.js` | The newspaper page around the puzzle: paper and desk textures, masthead dateline, and the news columns that fill the margins |
-| `js/screens.js` | Menu, level map, pause, settings, level complete |
+| `js/levelmap.js` | The world map: chapter worlds, landmarks, signposts, the road, level coins and the mascot |
+| `js/screens.js` | Menu, level select screen, pause, settings, level complete |
 | `data/word-library.json` | 5,000-word library in buckets by length (3–12 letters) |
 | `data/word-library.js` | The same data as a script, so the game works from `file://` |
 | `assets/img/` | The coffee-cup mascot, plus its favicon and app-icon sizes |
-| `tools/` | Scripts that rebuild the word library | and cut the mascot out of its background (`cut_mascot.py`) |
+| `tools/` | Scripts that rebuild the word library and cut the mascot out of its background (`cut_mascot.py`) |
 
 ## Difficulty
 

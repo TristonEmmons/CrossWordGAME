@@ -193,111 +193,21 @@
   // ---- Level map ----
 
   const map = $('#level-map');
-  const NODE_SPACING = 118;
-  const CHAPTER = 5;
 
   function renderLevelMap() {
     const next = Save.nextLevel();
-    const count = Math.max(30, Math.ceil((next + 10) / CHAPTER) * CHAPTER);
-    const width = Math.min(map.clientWidth || 480, 520);
-    const top = 110;
-    const points = [];
-    for (let i = 0; i < count; i++) {
-      const x = width / 2 + Math.sin(i * 0.95) * width * 0.3;
-      const extra = Math.floor(i / CHAPTER) * 56; // room for chapter banners
-      points.push([x, top + i * NODE_SPACING + extra]);
-    }
-    const height = points[points.length - 1][1] + 110;
-
-    map.textContent = '';
-    map.style.height = height + 'px';
-
-    // Winding path through the nodes (smooth cubic segments).
-    const svgNS = 'http://www.w3.org/2000/svg';
-    const svg = document.createElementNS(svgNS, 'svg');
-    svg.setAttribute('class', 'map-path');
-    svg.setAttribute('width', width);
-    svg.setAttribute('height', height);
-    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-    const pathFor = (upto) => {
-      let d = `M ${points[0][0]} ${points[0][1]}`;
-      for (let i = 1; i < upto; i++) {
-        const [x0, y0] = points[i - 1];
-        const [x1, y1] = points[i];
-        const my = (y0 + y1) / 2;
-        d += ` C ${x0} ${my}, ${x1} ${my}, ${x1} ${y1}`;
-      }
-      return d;
-    };
-    const base = document.createElementNS(svgNS, 'path');
-    base.setAttribute('d', pathFor(points.length));
-    base.setAttribute('class', 'path-base');
-    svg.appendChild(base);
-    const done = document.createElementNS(svgNS, 'path');
-    done.setAttribute('d', pathFor(Math.min(next, points.length)));
-    done.setAttribute('class', 'path-done');
-    svg.appendChild(done);
-
-    // Light decorative flourishes scattered beside the path.
-    const rng = CC.makeRng(1234);
-    for (let i = 0; i < count; i++) {
-      const [x, y] = points[i];
-      const side = x > width / 2 ? -1 : 1;
-      const fx = CC.clamp(x + side * (70 + rng() * 60), 16, width - 16);
-      const fy = y + (rng() - 0.5) * 60;
-      const deco = document.createElementNS(svgNS, 'text');
-      deco.setAttribute('x', fx);
-      deco.setAttribute('y', fy);
-      deco.setAttribute('class', 'deco');
-      deco.textContent = rng.pick(['✦', '✧', '•', '❋', '✿', '·']);
-      svg.appendChild(deco);
-    }
-    map.appendChild(svg);
-
-    for (let i = 0; i < count; i++) {
-      const level = i + 1;
-      if (i % CHAPTER === 0) {
-        const banner = CC.el('div', 'chapter', `Chapter ${i / CHAPTER + 1}`);
-        banner.style.transform = `translate(-50%, ${points[i][1] - 78}px)`;
-        banner.style.left = width / 2 + 'px';
-        if (level > next) banner.classList.add('locked');
-        map.appendChild(banner);
-      }
-      const node = CC.el('button', 'level-node');
-      node.style.left = points[i][0] + 'px';
-      node.style.top = points[i][1] + 'px';
-      node.style.animationDelay = Math.min(i, 14) * 30 + 'ms';
-      const record = Save.progress.completed[level];
-      if (record) {
-        node.classList.add('done');
-        node.innerHTML =
-          `<span class="num">${level}</span><span class="badge">${ICONS.check}</span>` +
-          `<span class="mini-stars">${[1, 2, 3]
-            .map((s) => `<i class="${s <= record.stars ? 'on' : ''}">${ICONS.star}</i>`)
-            .join('')}${record.stars >= 4 ? `<i class="on holo">${ICONS.holoStar}</i>` : ''}</span>`;
-        node.setAttribute('aria-label', `Level ${level}, completed, ${record.stars} stars. Replay`);
-        node.addEventListener('click', () => playLevel(level));
-      } else if (level === next) {
-        node.classList.add('current');
-        node.innerHTML = `<span class="num">${level}</span><span class="play-tag">Play</span>`;
-        node.setAttribute('aria-label', `Level ${level}, play`);
-        node.addEventListener('click', () => playLevel(level));
-      } else {
-        node.classList.add('locked');
-        node.disabled = true;
-        node.innerHTML = `<span class="num">${level}</span><span class="badge">${ICONS.lock}</span>`;
-        node.setAttribute('aria-label', `Level ${level}, locked`);
-      }
-      map.appendChild(node);
-    }
-
+    const nextY = CC.LevelMap.render(map, {
+      next,
+      completed: Save.progress.completed,
+      icons: ICONS,
+      onPlay: playLevel,
+    });
     $('#levels-stars').innerHTML = `${ICONS.star}<span>${Save.totalStars()}</span>`;
 
     // Bring the next playable level into view.
     requestAnimationFrame(() => {
       const scroller = $('#level-scroll');
-      const target = points[Math.min(next, count) - 1][1] - scroller.clientHeight / 2;
-      scroller.scrollTop = Math.max(0, target);
+      scroller.scrollTop = Math.max(0, nextY - scroller.clientHeight / 2);
     });
   }
 
