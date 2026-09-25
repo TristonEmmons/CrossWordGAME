@@ -55,8 +55,16 @@ Players climb a ladder of 10 coffee ranks by completing numbered levels. The cur
 | 6 | Vienna Roast | 25 levels | A refined puzzle solver. | + a gold monocle |
 | 7 | Kona Reserve ◆ | 30 levels | Premium puzzle-solving territory. | + a gilded rim on the cup |
 | 8 | Geisha Reserve ★ ✦ | 35 levels | Reserved for the truly dedicated. | + a jasmine sprig on the beret, and a soft gold glow |
+| 9 | Black Label ★ ■ | 40 levels | Elite status. One cup away from legend. | + a black satin bow tie |
 
-All rank data lives in `RANKS` in `js/ranks.js`, with badge art in `BADGES` and mascot extras in `MASCOT_EXTRAS`. Ranks 9–10 are listed there but not yet playable. Ranks with `tier: 'reserve'` (◆) get gold-foil edging on the menu rank chip and the Stats rank panel. `tier: 'elite'` (✦) adds a double gold rule, a ✦ by the rank name and a gold glow around the menu mascot.
+All rank data lives in `RANKS` in `js/ranks.js`, with badge art in `BADGES` and mascot extras in `MASCOT_EXTRAS`. Rank 10 is listed there but not yet playable.
+
+Premium tiers stack (`TIERS` in `js/ranks.js`): each includes the ones below it.
+- `reserve` (◆): gold-foil edging on the menu rank chip and the Stats rank panel.
+- `elite` (✦): adds a double gold rule, a ✦ by the rank name and a gold glow around the menu mascot.
+- `black` (■, "top shelf"): sets the menu chip, the Stats rank name and the promotion card on a small black label with gold lettering.
+
+The tiers only change the menu, Stats and level-complete card, never the puzzle.
 
 Every rank-up plays a fanfare and bursts confetti in the rank's colours. Ranks with a `milestone` label (★) get the special-edition version: an "Extra! Extra!" headline with a stamp, the rank's motto, a gold shine, gold stars and a longer fanfare. Ranks are earned strictly in order: the lookup climbs the ladder and stops at the first rank that isn't built or earned.
 

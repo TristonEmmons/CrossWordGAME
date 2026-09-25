@@ -203,8 +203,8 @@
     $('#rank-chip-number').textContent = `Rank ${rank.number} of ${CC.Ranks.total}`;
     $('#rank-chip-name').textContent = rank.name;
     chip.dataset.rank = rank.id;
-    chip.dataset.tier = rank.tier || '';
-    mascot.dataset.tier = rank.tier || '';
+    chip.dataset.tier = CC.Ranks.tierAttr(rank);
+    mascot.dataset.tier = CC.Ranks.tierAttr(rank);
     chip.classList.toggle('promoted', !!promoted);
     if (promoted) rankUpFanfare(promoted, $('#rank-chip-badge'), 1100);
     // The mascot's rank extras (e.g. French Roast's beret).
@@ -252,10 +252,10 @@
       })
       .join('');
     return `
-      <section class="sp-rank" data-rank="${current.id}" data-tier="${current.tier || ''}" style="${CC.Ranks.styleAttr(current)}">
+      <section class="sp-rank" data-rank="${current.id}" data-tier="${CC.Ranks.tierAttr(current)}" style="${CC.Ranks.styleAttr(current)}">
         <div class="rank-seal">${CC.Ranks.badgeHtml(current)}</div>
         <div class="rank-info">
-          <span class="rank-kicker">Your rank · ${current.number} of ${CC.Ranks.total}${current.tier ? ` · <em class="rank-tier">${current.tier} tier</em>` : ''}</span>
+          <span class="rank-kicker">Your rank · ${current.number} of ${CC.Ranks.total}${current.tier ? ` · <em class="rank-tier">${CC.Ranks.tierLabel(current)}</em>` : ''}</span>
           <h4>${current.name}</h4>
           <p class="rank-motto">“${current.description}”</p>
           <div class="rank-bar"><span style="transform:scaleX(${fraction})"></span></div>
@@ -466,6 +466,7 @@
       const r = result.promotion;
       CC.Ranks.paint(promo, r);
       promo.classList.toggle('milestone', !!r.milestone);
+      promo.dataset.tier = CC.Ranks.tierAttr(r);
       promo.innerHTML = promotionHtml(r);
       // Fires as the line pops in (its CSS animation starts at 2.2s).
       completeTimers.push(rankUpFanfare(r, promo.querySelector('.rank-badge'), 2500));

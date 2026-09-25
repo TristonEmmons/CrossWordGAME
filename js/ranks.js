@@ -1,7 +1,7 @@
 /* Coffee ranks: the player's progression title, earned by completing numbered levels.
    All rank data lives in RANKS below; everything else asks CC.Ranks. To add a rank,
    fill in its entry (`ready: true`, `levels`, `description`, `badge`, `color`,
-   `accent`, and optionally `trim`, `tier`, `mascot` and `milestone`) and add its artwork to BADGES / MASCOT_EXTRAS. */
+   `accent`, and optionally `trim`, `tier` (see TIERS), `mascot` and `milestone`) and add its artwork to BADGES / MASCOT_EXTRAS. */
 (function () {
   'use strict';
 
@@ -156,6 +156,35 @@
       <circle cx="50.2" cy="44.9" r="0.8" fill="#e0b44c"/>
       <path d="M10 8 l1.4 3.6 l3.8 0.2 l-3 2.4 l1 3.7 l-3.2 -2.1 l-3.2 2.1 l1 -3.7 l-3 -2.4 l3.8 -0.2 Z" fill="#e0b44c" stroke="#2b2a33" stroke-width="1.3" stroke-linejoin="round"/>
     </svg>`,
+
+    // Black Label: a matte black cup with a gold rim and handle on a black saucer,
+    // wrapped in a black label with gold lettering, between two gold laurel sprigs.
+    blackLabel: `<svg viewBox="0 0 64 64" aria-hidden="true">
+      <g fill="none" stroke="#c9962c" stroke-width="1.8" stroke-linecap="round">
+        <path d="M10 54 C3 45 2 32 7 20"/>
+        <path d="M52 54 C59 45 60 32 55 20"/>
+      </g>
+      <g fill="#e0b44c" stroke="#2b2a33" stroke-width="0.9">
+        <ellipse cx="5" cy="23" rx="2" ry="3.8" transform="rotate(-30 5 23)"/>
+        <ellipse cx="3.6" cy="31" rx="2" ry="3.8" transform="rotate(-12 3.6 31)"/>
+        <ellipse cx="3.8" cy="39" rx="2" ry="3.8" transform="rotate(8 3.8 39)"/>
+        <ellipse cx="6.4" cy="47" rx="2" ry="3.8" transform="rotate(28 6.4 47)"/>
+        <ellipse cx="57" cy="23" rx="2" ry="3.8" transform="rotate(30 57 23)"/>
+        <ellipse cx="58.4" cy="31" rx="2" ry="3.8" transform="rotate(12 58.4 31)"/>
+        <ellipse cx="58.2" cy="39" rx="2" ry="3.8" transform="rotate(-8 58.2 39)"/>
+        <ellipse cx="55.6" cy="47" rx="2" ry="3.8" transform="rotate(-28 55.6 47)"/>
+      </g>
+      <ellipse cx="31" cy="51" rx="21" ry="4.8" fill="#1c1a20" stroke="#2b2a33" stroke-width="2.6"/>
+      <ellipse cx="31" cy="50.2" rx="17" ry="3" fill="none" stroke="#c9962c" stroke-width="1.2"/>
+      <path d="M45 26 C55 25 55 40 43 39" fill="none" stroke="#2b2a33" stroke-width="3.4" stroke-linecap="round"/>
+      <path d="M45 26 C52 26 52 37 43 37" fill="none" stroke="#e0b44c" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M15 21 H47 L45 38 A9 9 0 0 1 36 47 H26 A9 9 0 0 1 17 38 Z" fill="#1c1a20" stroke="#2b2a33" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M16.2 28 H45.9 L45 36 H17.1 Z" fill="#0d0c10" stroke="#e0b44c" stroke-width="1.4" stroke-linejoin="round"/>
+      <text x="31" y="34" text-anchor="middle" font-family="Georgia, serif" font-size="4.6" font-weight="700" textLength="25" lengthAdjust="spacingAndGlyphs" fill="#f3d88a">BLACK LABEL</text>
+      <path d="M21 39 V43" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity="0.3"/>
+      <ellipse cx="31" cy="21" rx="16" ry="4" fill="#120a06" stroke="#e0b44c" stroke-width="2.6"/>
+      <path d="M27 15 C24 11 30 9 27 5 M35 15 C32 11 38 9 35 5" fill="none" stroke="#8a7560" stroke-width="2.6" stroke-linecap="round"/>
+    </svg>`,
   };
 
   // Small extras worn by the menu mascot. A rank lists the extras it wears in `mascot`;
@@ -224,7 +253,24 @@
         <circle cx="217" cy="109" r="4" fill="#e0b44c"/>
         <circle cx="165" cy="128" r="3" fill="#e0b44c"/>
       </g>`,
+
+    // A black satin bow tie with a gold knot, at the front of the cup below the smile.
+    bowTie: `
+      <g transform="translate(243 392)">
+        <path d="M-6 -4 L-44 -24 C-52 -12 -52 12 -44 24 L-6 4 Z" fill="#1c1a20" stroke="#0d0c10" stroke-width="5" stroke-linejoin="round"/>
+        <path d="M6 -4 L44 -24 C52 -12 52 12 44 24 L6 4 Z" fill="#1c1a20" stroke="#0d0c10" stroke-width="5" stroke-linejoin="round"/>
+        <path d="M-38 -12 L-14 -2 M38 -12 L14 -2" stroke="#4a4652" stroke-width="4" stroke-linecap="round"/>
+        <rect x="-11" y="-11" width="22" height="22" rx="6" fill="#e0b44c" stroke="#0d0c10" stroke-width="5"/>
+      </g>`,
   };
+
+  // Premium tiers, lowest first. A rank's `tier` includes every tier below it, so each
+  // tier's styling builds on the last (CSS matches them with [data-tier~='elite']).
+  const TIERS = [
+    { id: 'reserve', label: 'Reserve tier' },
+    { id: 'elite', label: 'Elite tier' },
+    { id: 'black', label: 'Top shelf' },
+  ];
 
   // The full ladder. `levels` is how many numbered levels must be completed to reach
   // a rank. Ranks marked `ready: false` are planned but not in the game yet: they show
@@ -341,7 +387,22 @@
       mascot: ['gildedRim', 'beret', 'beanPin', 'jasmine', 'paper', 'wafer', 'monocle'],
       ready: true,
     },
-    { id: 'black-label', number: 9, name: 'Black Label', ready: false },
+    {
+      id: 'black-label',
+      number: 9,
+      name: 'Black Label',
+      description: 'Elite status. One cup away from legend.',
+      levels: 40,
+      badge: 'blackLabel',
+      color: '#121114',
+      accent: '#3a3640',
+      trim: '#e0b44c',
+      // Top shelf: everything the reserve and elite tiers get, set on a black label.
+      tier: 'black',
+      milestone: 'One cup away',
+      mascot: ['gildedRim', 'beret', 'beanPin', 'jasmine', 'paper', 'wafer', 'monocle', 'bowTie'],
+      ready: true,
+    },
     { id: 'daily-legend', number: 10, name: 'The Daily Legend', ready: false },
   ];
 
@@ -371,6 +432,18 @@
     return parts ? `<svg viewBox="0 0 512 512" aria-hidden="true">${parts}</svg>` : '';
   }
 
+  // The premium tiers a rank belongs to, space-separated for a data-tier attribute
+  // (e.g. 'reserve elite'), and the name of its own tier for display.
+  function tierAttr(rank) {
+    const i = TIERS.findIndex((t) => t.id === rank.tier);
+    return i < 0 ? '' : TIERS.slice(0, i + 1).map((t) => t.id).join(' ');
+  }
+
+  function tierLabel(rank) {
+    const t = TIERS.find((x) => x.id === rank.tier);
+    return t ? t.label : '';
+  }
+
   // A rank's colors as CSS custom properties, for the badge ring and anything themed by rank.
   function colors(rank) {
     return {
@@ -397,6 +470,8 @@
     mascotHtml,
     paint,
     styleAttr,
+    tierAttr,
+    tierLabel,
 
     current() {
       return rankFor(levelsCompleted());
