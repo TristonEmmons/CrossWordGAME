@@ -204,6 +204,7 @@
     $('#rank-chip-name').textContent = rank.name;
     chip.dataset.rank = rank.id;
     chip.dataset.tier = rank.tier || '';
+    mascot.dataset.tier = rank.tier || '';
     chip.classList.toggle('promoted', !!promoted);
     if (promoted) rankUpFanfare(promoted, $('#rank-chip-badge'), 1100);
     // The mascot's rank extras (e.g. French Roast's beret).

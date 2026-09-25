@@ -132,6 +132,30 @@
       <path d="M9 50 C20 54 44 54 55 50 L56 58 C44 62 20 62 8 58 Z" fill="#b8323d" stroke="#2b2a33" stroke-width="2" stroke-linejoin="round"/>
       <text x="32" y="58.6" text-anchor="middle" font-family="Georgia, serif" font-size="6" font-weight="700" letter-spacing="0.9" fill="#fff1bf">RESERVE</text>
     </svg>`,
+
+    // Geisha Reserve: a slender glass pour-over carafe with a wooden collar and leather
+    // tie, brewed coffee glowing in the bottom, and a sprig of jasmine (Panama's Geisha
+    // coffee is famous for its jasmine notes), under a small gold star.
+    geishaReserve: `<svg viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M22 5 H42 L34 24 L35 26 L46 50 A6 6 0 0 1 41 58 H23 A6 6 0 0 1 18 50 L29 26 L30 24 Z" fill="#eef6f8" stroke="#2b2a33" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M22 44 H42 L46 50 A6 6 0 0 1 41 56 H23 A6 6 0 0 1 18 50 Z" fill="#6b3a1f"/>
+      <path d="M21.5 44 H42.5" stroke="#9a5a2e" stroke-width="1.6"/>
+      <path d="M27 20 L37 20 L34.6 27 H29.4 Z" fill="#b9854f" stroke="#2b2a33" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M29.4 23.5 H34.6" stroke="#7a4a28" stroke-width="1.6"/>
+      <path d="M37 22 C41 22 42 26 40 29" fill="none" stroke="#2b2a33" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="40" cy="30" r="1.8" fill="#6b3a1f" stroke="#2b2a33" stroke-width="1.2"/>
+      <path d="M25 10 L27 16" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+      <path d="M23 32 L21 37" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+      <path d="M50 58 C51 50 53 44 57 40" fill="none" stroke="#3f6b3a" stroke-width="2" stroke-linecap="round"/>
+      <path d="M52 49 C56 49 58 46 57 43 C54 44 52 46 52 49 Z" fill="#5f8f4e" stroke="#2b2a33" stroke-width="1.2"/>
+      <g fill="#fffdf6" stroke="#2b2a33" stroke-width="1.2">
+        <path d="M57 36 l1.6 -3 l1.6 3 l3 1.2 l-3 1.4 l-1.6 3 l-1.6 -3 l-3 -1.4 Z"/>
+        <path d="M49 44 l1.2 -2.3 l1.2 2.3 l2.3 0.9 l-2.3 1.1 l-1.2 2.3 l-1.2 -2.3 l-2.3 -1.1 Z"/>
+      </g>
+      <circle cx="58.6" cy="37.3" r="1" fill="#e0b44c"/>
+      <circle cx="50.2" cy="44.9" r="0.8" fill="#e0b44c"/>
+      <path d="M10 8 l1.4 3.6 l3.8 0.2 l-3 2.4 l1 3.7 l-3.2 -2.1 l-3.2 2.1 l1 -3.7 l-3 -2.4 l3.8 -0.2 Z" fill="#e0b44c" stroke="#2b2a33" stroke-width="1.3" stroke-linejoin="round"/>
+    </svg>`,
   };
 
   // Small extras worn by the menu mascot. A rank lists the extras it wears in `mascot`;
@@ -187,6 +211,19 @@
       <ellipse cx="243" cy="190" rx="171" ry="42" fill="none" stroke="#2b2a33" stroke-width="11" opacity="0.25"/>
       <ellipse cx="243" cy="190" rx="171" ry="42" fill="none" stroke="#e0b44c" stroke-width="7"/>
       <path d="M130 158 C170 150 210 148 246 148" fill="none" stroke="#fff4cf" stroke-width="3.5" stroke-linecap="round"/>`,
+
+    // A sprig of white jasmine tucked into the beret, beside the bean pin.
+    jasmine: `
+      <g transform="rotate(-14 170 160)">
+        <path d="M150 150 C164 132 184 124 206 124" fill="none" stroke="#3f6b3a" stroke-width="5" stroke-linecap="round"/>
+        <path d="M176 130 C182 116 196 112 204 116 C198 128 188 132 176 130 Z" fill="#5f8f4e" stroke="#1e1b22" stroke-width="3"/>
+        <g fill="#fffdf6" stroke="#1e1b22" stroke-width="3.5" stroke-linejoin="round">
+          <path d="M210 104 l7 -14 l7 14 l14 5 l-14 6 l-7 14 l-7 -14 l-14 -6 Z"/>
+          <path d="M160 124 l5 -10 l5 10 l10 4 l-10 4 l-5 10 l-5 -10 l-10 -4 Z"/>
+        </g>
+        <circle cx="217" cy="109" r="4" fill="#e0b44c"/>
+        <circle cx="165" cy="128" r="3" fill="#e0b44c"/>
+      </g>`,
   };
 
   // The full ladder. `levels` is how many numbered levels must be completed to reach
@@ -287,7 +324,23 @@
       mascot: ['gildedRim', 'beret', 'beanPin', 'paper', 'wafer', 'monocle'],
       ready: true,
     },
-    { id: 'geisha-reserve', number: 8, name: 'Geisha Reserve', ready: false },
+    {
+      id: 'geisha-reserve',
+      number: 8,
+      name: 'Geisha Reserve',
+      description: 'Reserved for the truly dedicated.',
+      levels: 35,
+      badge: 'geishaReserve',
+      color: '#0f4d3f',
+      accent: '#e0b44c',
+      trim: '#fff1bf',
+      // The elite tier: the reserve gold foil plus a double gold rule, a ✦ rarity mark by
+      // the rank name, and a soft gold glow around the menu mascot.
+      tier: 'elite',
+      milestone: 'Elite rank',
+      mascot: ['gildedRim', 'beret', 'beanPin', 'jasmine', 'paper', 'wafer', 'monocle'],
+      ready: true,
+    },
     { id: 'black-label', number: 9, name: 'Black Label', ready: false },
     { id: 'daily-legend', number: 10, name: 'The Daily Legend', ready: false },
   ];

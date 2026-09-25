@@ -3901,25 +3901,54 @@ body.high-contrast #screen-stats {
   to { opacity: 0.85; transform: rotate(-4deg) scale(1); }
 }
 
-/* Reserve tier (ranks with `tier: 'reserve'`): gold-foil edging on the menu chip and the
-   stats rank panel. Kept to borders and paper tone so nothing competes with the puzzle. */
-.rank-chip[data-tier='reserve'] {
+/* Premium tiers. Reserve (`tier: 'reserve'`): gold-foil edging on the menu chip and the
+   stats rank panel. Elite (`tier: 'elite'`) builds on it with a double gold rule, a small
+   ✦ rarity mark and a soft glow around the menu mascot. Kept to borders, paper tone and
+   the menu, so nothing competes with the puzzle. */
+.rank-chip:is([data-tier='reserve'], [data-tier='elite']) {
   background: linear-gradient(135deg, #fffaf0, #f4e3b8);
   box-shadow: 0 3px 0 var(--news-ink), inset 0 0 0 2px #fffaf0, inset 0 0 0 3.5px #c9962c;
 }
 
-.rank-chip[data-tier='reserve']:hover {
+.rank-chip:is([data-tier='reserve'], [data-tier='elite']):hover {
   box-shadow: 0 5px 0 var(--news-ink), inset 0 0 0 2px #fffaf0, inset 0 0 0 3.5px #c9962c;
 }
 
-.rank-chip[data-tier='reserve'] .rank-chip-text small,
-.sp-rank[data-tier='reserve'] .rank-kicker {
+.rank-chip:is([data-tier='reserve'], [data-tier='elite']) .rank-chip-text small,
+.sp-rank:is([data-tier='reserve'], [data-tier='elite']) .rank-kicker {
   color: #9a6a12;
 }
 
-.sp-rank[data-tier='reserve'] {
+.sp-rank:is([data-tier='reserve'], [data-tier='elite']) {
   background: linear-gradient(135deg, #fdf7e6, #f3e2b9);
   box-shadow: 4px 4px 0 var(--news-ink), inset 0 0 0 4px #fdf7e6, inset 0 0 0 6px #c9962c;
+}
+
+.rank-chip[data-tier='elite'] {
+  box-shadow: 0 3px 0 var(--news-ink), inset 0 0 0 2px #fffaf0, inset 0 0 0 3.5px #c9962c,
+    inset 0 0 0 5px #fffaf0, inset 0 0 0 6px #c9962c;
+}
+
+.rank-chip[data-tier='elite']:hover {
+  box-shadow: 0 5px 0 var(--news-ink), inset 0 0 0 2px #fffaf0, inset 0 0 0 3.5px #c9962c,
+    inset 0 0 0 5px #fffaf0, inset 0 0 0 6px #c9962c;
+}
+
+.sp-rank[data-tier='elite'] {
+  box-shadow: 4px 4px 0 var(--news-ink), inset 0 0 0 4px #fdf7e6, inset 0 0 0 6px #c9962c,
+    inset 0 0 0 8px #fdf7e6, inset 0 0 0 9px #c9962c;
+}
+
+.rank-chip[data-tier='elite'] .rank-chip-text b::after,
+.sp-rank[data-tier='elite'] .rank-info h4::after {
+  content: ' ✦';
+  font-size: 0.6em;
+  vertical-align: 0.35em;
+  color: #c9962c;
+}
+
+.mascot[data-tier='elite'] img {
+  filter: drop-shadow(0 6px 8px rgba(90, 50, 20, 0.22)) drop-shadow(0 0 14px rgba(240, 196, 90, 0.55));
 }
 
 .rank-tier {
