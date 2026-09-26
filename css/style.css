@@ -379,9 +379,18 @@ body:not([data-screen='menu']) .menu-scene * {
 }
 
 /* Pieces */
-.ms-beam { opacity: 0; }
-.tod-night .ms-beam { opacity: 0.55; }
-.tod-evening .ms-beam { opacity: 0.3; }
+/* Exhaust puffs as a car pulls away: drift back, swell and fade. */
+.ms-puff {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ms-puff 1.2s ease-out forwards;
+}
+
+@keyframes ms-puff {
+  0% { opacity: 0.9; transform: translate(0, 0) scale(0.6); }
+  100% { opacity: 0; transform: translate(var(--dx), -14px) scale(2.2); }
+}
 .ms-brake { opacity: 0; transition: opacity 0.2s; }
 .lit .ms-brake { opacity: 0.45; }
 .ms-car.braking .ms-brake { opacity: 1; }
