@@ -376,6 +376,13 @@
 
   // Swaps every baked picture under `root` for its bitmap once that's ready.
   function flatten(root) {
+    root.querySelectorAll('[data-src]').forEach((el) => {
+      const url = el.getAttribute('data-src');
+      if (!SIZES.has(url)) return;
+      raster(url).then((flat) => {
+        if (flat !== url) el.style.backgroundImage = cssUrl(flat);
+      });
+    });
     root.querySelectorAll('img, image').forEach((el) => {
       const isImg = el instanceof HTMLImageElement;
       const url = el.getAttribute(isImg ? 'src' : 'href');
@@ -786,11 +793,15 @@
     return carImages.get(k);
   }
 
-  // A flipbook placed at (x, y) in the walker's own units (feet at 0,0), scaled by `sc`.
+  // A flipbook placed at (x, y) in the walker's own units (feet at 0,0), scaled by `sc`:
+  // a one-frame window with the strip as its background, stepping from pose to pose.
+  // (Classic sprite animation: no oversized images or layers, so it draws the same in
+  // every browser.)
   function sprite(url, box, x, y, sc, cycle) {
-    return `<div class="ms-sprite" style="left:${(x + box.x * sc).toFixed(1)}px;top:${(y + box.y * sc).toFixed(1)}px;width:${(box.w * sc).toFixed(1)}px;height:${(box.h * sc).toFixed(1)}px">
-      <img class="ms-strip" alt="" src="${url}" style="animation-duration:${cycle}s"></div>`;
+    return `<div class="ms-sprite" data-src="${url}" style="left:${(x + box.x * sc).toFixed(1)}px;top:${(y + box.y * sc).toFixed(1)}px;width:${(box.w * sc).toFixed(1)}px;height:${(box.h * sc).toFixed(1)}px;background-image:${cssUrl(url)};animation-duration:${cycle}s"></div>`;
   }
+
+  const cssUrl = (url) => `url('${url.replace(/'/g, '%27')}')`;
 
   function frontFigure(p, key, tod) {
     const f = frontParts(p);

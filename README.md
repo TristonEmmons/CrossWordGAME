@@ -8,6 +8,8 @@ Open `index.html` in any modern browser. It needs no build step and no server, s
 
 Progress, settings and the list of words already used are saved in the browser's `localStorage`.
 
+**Updating a hosted copy.** `index.html` loads its styles and scripts with a version tag (`?v=20260926`). Bump that tag in `index.html` whenever you ship changes, so browsers fetch the new files together instead of mixing new and cached ones.
+
 ## Music
 
 Four tracks ship in `assets/music/`: Crossword Calm, Coffee Shop Loop, Puzzle Playtime and Velvet Stains. Music starts on the first click or key press, since browsers block sound until then.

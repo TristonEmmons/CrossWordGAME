@@ -468,23 +468,17 @@ body:not([data-screen='menu']) .menu-scene * {
   transform-origin: 0 0;
 }
 
-/* A flipbook: a window one frame wide, with the strip of 12 poses stepping through it. */
+/* A flipbook: a window one frame wide showing its strip of 12 poses as a background,
+   stepping from pose to pose (frame k sits at k/11 of the way along). */
 .ms-sprite {
   position: absolute;
-  overflow: hidden;
-}
-
-.ms-strip {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 1200%;
-  height: 100%;
-  will-change: transform;
+  background-repeat: no-repeat;
+  background-size: 1200% 100%;
+  background-position: 0% 0;
   animation: ms-frames 1s steps(12) infinite;
 }
 
-@keyframes ms-frames { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+@keyframes ms-frames { from { background-position: 0% 0; } to { background-position: 109.0909% 0; } }
 
 /* People (and the dog): each limb is its own image, pivoting at the hip or shoulder
    (set inline as a transform-origin). --gait is one full stride, in seconds. */
