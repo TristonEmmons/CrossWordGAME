@@ -16,6 +16,35 @@
 
   CC.clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
+  // Developer mode: the hidden dev tools (Page Up rank-up, addcup, seeall) only work
+  // here. It's on automatically when the game is opened straight from its files or as
+  // localhost. Anywhere else (a shared or public address), add ?dev to the link once to
+  // switch it on for that browser, or ?dev=off to switch it back off.
+  CC.devMode = (function () {
+    const KEY = 'crazyCrossword.dev';
+    let param = null;
+    try {
+      param = new URLSearchParams(window.location.search).get('dev');
+    } catch (e) {
+      param = null;
+    }
+    try {
+      if (param === 'off') localStorage.removeItem(KEY);
+      else if (param !== null) localStorage.setItem(KEY, '1');
+    } catch (e) {
+      /* storage blocked: the ?dev link still works for this visit */
+    }
+    if (param === 'off') return false;
+    if (param !== null) return true;
+    const host = window.location.hostname;
+    if (window.location.protocol === 'file:' || host === 'localhost' || host === '127.0.0.1' || host === '[::1]') return true;
+    try {
+      return localStorage.getItem(KEY) === '1';
+    } catch (e) {
+      return false;
+    }
+  })();
+
   // Mulberry32: tiny, fast, good-enough seeded PRNG. Returns floats in [0, 1).
   CC.makeRng = function (seed) {
     let a = seed >>> 0;

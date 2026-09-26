@@ -815,9 +815,9 @@
   // ---- Hidden developer key: Page Up = instant rank-up ----
   // Outside a level, marks every level up to the next rank's unlock level as finished
   // (3 stars, no hints), then returns to the main menu, where the usual promotion plays.
-  // Not mentioned anywhere in the game.
+  // Not mentioned anywhere in the game, and only in developer mode (see CC.devMode).
   document.addEventListener('keydown', (e) => {
-    if (e.key !== 'PageUp' || e.repeat || current === 'game' || openModals.length) return;
+    if (!CC.devMode || e.key !== 'PageUp' || e.repeat || current === 'game' || openModals.length) return;
     e.preventDefault();
     const { next } = CC.Ranks.progress();
     if (!next || !next.ready) {

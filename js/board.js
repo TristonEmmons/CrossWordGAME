@@ -719,7 +719,7 @@
     }, 700);
   }
 
-  // ---- Hidden developer codes (gameplay only), each typed within 1.5s ----
+  // ---- Hidden developer codes (gameplay only, developer mode only: see CC.devMode), each typed within 1.5s ----
   //   seeall: highlight every word for 5 seconds
   //   addcup: +10 coffee cups
 
@@ -732,7 +732,7 @@
   let revealTimer = 0;
 
   document.addEventListener('keydown', (e) => {
-    if (!puzzle || !CC.Screens.isGameScreen()) {
+    if (!CC.devMode || !puzzle || !CC.Screens.isGameScreen()) {
       keyTrail = [];
       return;
     }
