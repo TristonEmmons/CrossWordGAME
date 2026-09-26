@@ -316,44 +316,530 @@
     return carImages.get(k);
   }
 
-  function bakeSmall(viewBox, art, tod, blur) {
+  // The frost blur, plus dimming after dark.
+  function frostFilter(tod, blur) {
     const dim = tod === 'night' ? 0.7 : tod === 'evening' ? 0.9 : 1;
     const shadeFx = dim < 1 ? `<feComponentTransfer><feFuncR type="linear" slope="${dim}"/><feFuncG type="linear" slope="${dim}"/><feFuncB type="linear" slope="${dim + 0.05}"/></feComponentTransfer>` : '';
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}"><defs><filter id="b" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="${blur}"/>${shadeFx}</filter></defs><g filter="url(#b)">${art}</g></svg>`;
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    return `<filter id="b" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="${blur}"/>${shadeFx}</filter>`;
+  }
+
+  function bakeSmall(viewBox, art, tod, blur) {
+    const [, , vw, vh] = viewBox.split(' ').map(Number);
+    const res = pixelScale(1, 2);
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${Math.round(vw * res)}" height="${Math.round(vh * res)}" viewBox="${viewBox}"><defs>${frostFilter(tod, blur)}</defs><g filter="url(#b)">${art}</g></svg>`;
+    return svgUrl(svg, vw * res, vh * res);
+  }
+
+  // Baked pictures start as SVG (with their blur filter) and are then flattened once into
+  // plain bitmaps. Browsers can redraw a blur filter every time a picture moves or turns;
+  // a bitmap is just copied, which keeps swinging limbs and rolling wheels cheap.
+  const SIZES = new Map(); // SVG data URL -> [width, height] to flatten it at
+  const RASTERS = new Map(); // SVG data URL -> Promise of a bitmap URL
+
+  function svgUrl(svg, w, h) {
+    const url = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    SIZES.set(url, [Math.max(1, Math.round(w)), Math.max(1, Math.round(h))]);
+    return url;
+  }
+
+  // How many bitmap pixels per scene unit: enough for the screen, never more than needed
+  // (everything here is blurred, so a little softness is invisible).
+  function pixelScale(min, max) {
+    const bw = window.innerWidth + 80;
+    const bh = window.innerHeight + 56;
+    const shown = Math.max(bw / W, bh / H) * Math.min(window.devicePixelRatio || 1, 2);
+    return Math.max(min, Math.min(max, shown));
+  }
+
+  function raster(url) {
+    if (!RASTERS.has(url)) {
+      const [w, h] = SIZES.get(url);
+      RASTERS.set(url, new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            canvas.toBlob((blob) => resolve(blob ? URL.createObjectURL(blob) : url));
+          } catch (e) {
+            resolve(url); // some browsers won't flatten SVG: keep the SVG
+          }
+        };
+        img.onerror = () => resolve(url);
+        img.src = url;
+      }));
+    }
+    return RASTERS.get(url);
+  }
+
+  // Swaps every baked picture under `root` for its bitmap once that's ready.
+  function flatten(root) {
+    root.querySelectorAll('img, image').forEach((el) => {
+      const isImg = el instanceof HTMLImageElement;
+      const url = el.getAttribute(isImg ? 'src' : 'href');
+      if (!url || !SIZES.has(url)) return;
+      raster(url).then((flat) => {
+        if (flat !== url) el.setAttribute(isImg ? 'src' : 'href', flat);
+      });
+    });
+  }
+
+  // The big layers change with the time of day and weather; free the old bitmaps.
+  function forgetLayer(url) {
+    const job = RASTERS.get(url);
+    if (job) job.then((flat) => flat !== url && URL.revokeObjectURL(flat));
+    RASTERS.delete(url);
+    SIZES.delete(url);
   }
 
   // -- People --
+  // Cartoon people drawn in parts: legs, arms and a body (torso, head, hair, face and
+  // accessories). Each part is baked once into a small blurred image. The limbs then
+  // swing with CSS, so the walk costs almost nothing to animate. Side view for people
+  // strolling the far sidewalk, front view for people crossing toward us.
 
-  const SKIN = ['#f4c9a4', '#e0a77e', '#b97a52', '#8a5a3a'];
-  const HAIR = ['#3b2a20', '#8a5a35', '#d9b36a', '#2b2a33', '#b0b0b0'];
-  const UMBRELLAS = ['#ff6b5b', '#1fa3a3', '#ffc145', '#8fb8ff'];
+  const SKIN = ['#f6d1b1', '#e8b48c', '#c68b62', '#9a6a48', '#6f4a33'];
+  const UMBRELLAS = ['#ff6b5b', '#1fa3a3', '#ffc145', '#8fb8ff', '#c9a3d6'];
+  const dark = (c, t) => mix(c, '#2b2a33', t == null ? 0.24 : t);
+  const limb = (d, color, w) =>
+    `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${(w || 9) + 5}" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${color}" stroke-width="${w || 9}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const hand = (x, y, skin) => `<circle cx="${x}" cy="${y}" r="5.4" fill="${skin}" ${thin}/>`;
 
-  // Side view, walking right (flip to walk left).
-  function strollerSvg(coat, skin, hair, extra, umbrella) {
-    return `<ellipse cx="0" cy="2" rx="20" ry="5" fill="#000" fill-opacity="0.15"/>
-      <path class="ms-leg a" d="M-6 -40 L-10 0" ${o} fill="none"/><path class="ms-leg b" d="M6 -40 L10 0" ${o} fill="none"/>
-      <path class="ms-arm" d="M0 -84 L-12 -52" ${o} fill="none"/>
-      <rect x="-18" y="-96" width="36" height="60" rx="14" fill="${coat}" ${o}/>
-      <circle cx="0" cy="-114" r="17" fill="${skin}" ${o}/>
-      <path d="M-17 -118 Q-14 -136 2 -134 Q16 -132 17 -118 Q8 -126 -4 -124 Z" fill="${hair}"/>
-      <circle cx="9" cy="-114" r="2" fill="${INK}"/>
-      ${extra || ''}
-      ${umbrella ? `<path d="M10 -88 V-150" ${thin}/><path d="M-36 -148 Q10 -196 56 -148 Z" fill="${umbrella}" ${o}/>` : ''}`;
+  // Curly hair: overlapping puffs, outlined once as a whole.
+  const puffs = (pts, r, color) =>
+    pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${r + 1.5}" fill="${INK}"/>`).join('') +
+    pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${r - 1}" fill="${color}"/>`).join('');
+
+  // ---- Side view (facing right; feet on y = 0, hip at 0,-50, shoulder at 0,-96) ----
+
+  function sideHead(p) {
+    const h = p.hair;
+    const hx = 3;
+    const hy = -117;
+    let back = '';
+    let front = '';
+    switch (p.hairStyle) {
+      case 'bob':
+        front = `<path d="M-14 -103 Q-19 -135 3 -135.5 Q20 -135 20.5 -120 Q12 -127.5 3 -126 Q-3 -123 -4 -114 L-3 -101 Q-9 -98 -14 -103 Z" fill="${h}" ${thin}/>`;
+        break;
+      case 'ponytail':
+        back = `<path d="M-11 -125 Q-29 -124 -28 -100 Q-22 -104 -17 -102 Q-21 -112 -11 -115 Z" fill="${h}" ${thin}/>`;
+        front = `<path d="M-13 -112 Q-16 -135 3 -135.5 Q18 -135.5 20.5 -121 Q12 -127 5 -125.5 Q0 -123 -3 -117 Q-6 -113 -8 -108 Q-12 -107 -13 -112 Z" fill="${h}" ${thin}/>`;
+        break;
+      case 'bun':
+        back = `<circle cx="-7" cy="-134" r="8" fill="${h}" ${thin}/>`;
+        front = `<path d="M-13 -112 Q-16 -135 3 -135.5 Q18 -135.5 20.5 -121 Q12 -127 5 -125.5 Q0 -123 -3 -117 Q-6 -113 -8 -108 Q-12 -107 -13 -112 Z" fill="${h}" ${thin}/>`;
+        break;
+      case 'curly':
+        front = puffs([[-11, -110], [-12, -121], [-7, -130], [2, -135], [11, -133], [17, -126]], 7.5, h);
+        break;
+      case 'bald':
+        front = `<path d="M-12 -123 Q-16 -110 -7 -103 L-4 -107 Q-9 -114 -7 -123 Z" fill="${h}" ${thin}/>`;
+        break;
+      default:
+        front = `<path d="M-13 -112 Q-16 -135 3 -135.5 Q18 -135.5 20.5 -121 Q12 -127 5 -125.5 Q0 -123 -3 -117 Q-6 -113 -8 -108 Q-12 -107 -13 -112 Z" fill="${h}" ${thin}/>`;
+    }
+    const beard = p.beard ? `<path d="M3 -110 Q7 -99 15 -101 Q20 -104 19 -111 Q15 -106 9 -107 Q5 -107 3 -110 Z" fill="${h}" ${thin}/>` : '';
+    const face = `<circle cx="11" cy="-118.5" r="2" fill="${INK}"/><path d="M8 -124.5 Q11 -126 14 -124.5" fill="none" stroke="${dark(h, 0.35)}" stroke-width="2" stroke-linecap="round"/>
+      <path d="M18 -118 Q23 -115 18.5 -111.5" fill="${p.skin}" stroke="${INK}" stroke-width="2.2" stroke-linecap="round"/>
+      ${p.beard ? '' : `<path d="M11 -108.5 Q14.5 -106 17.5 -108.5" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round"/>`}
+      <circle cx="9" cy="-111.5" r="3.4" fill="#ff8a8a" fill-opacity="0.45"/>`;
+    const ear = `<ellipse cx="-1" cy="-116" rx="3.6" ry="4.8" fill="${p.skin}" ${thin}/><path d="M-1 -118 q2 2 0 4" fill="none" stroke="${INK}" stroke-opacity="0.5" stroke-width="1.5"/>`;
+    const glasses = p.glasses ? `<circle cx="12" cy="-118.5" r="5" fill="#fff" fill-opacity="0.25" stroke="${INK}" stroke-width="2.2"/><path d="M7 -119 L0 -118" stroke="${INK}" stroke-width="2"/>` : '';
+    let hat = '';
+    if (p.hat === 'beanie') {
+      hat = `<path d="M-14 -124 Q-14 -148 3 -148 Q20 -148 20 -124 Z" fill="${p.hatColor}" ${thin}/><rect x="-15" y="-128" width="36" height="7" rx="3.5" fill="${dark(p.hatColor, 0.15)}" ${thin}/><circle cx="3" cy="-150" r="5.5" fill="#fffaf1" ${thin}/>`;
+    } else if (p.hat === 'cap') {
+      hat = `<path d="M-13 -121 Q-13 -140 3 -140 Q18 -140 19 -123 Z" fill="${p.hatColor}" ${thin}/><path d="M17 -124 L33 -121 Q34 -117 19 -118 Z" fill="${dark(p.hatColor, 0.15)}" ${thin}/>`;
+    } else if (p.hat === 'fedora') {
+      hat = `<ellipse cx="3" cy="-127" rx="24" ry="4.5" fill="${p.hatColor}" ${thin}/><path d="M-10 -127 L-8 -142 Q3 -147 14 -142 L16 -127 Z" fill="${p.hatColor}" ${thin}/><rect x="-9" y="-133" width="25" height="5" fill="${INK}" fill-opacity="0.75"/>`;
+    }
+    const head = `<circle cx="${hx}" cy="${hy}" r="15.5" fill="${p.skin}" ${thin}/>`;
+    const art = `${back}${head}${ear}${face}${beard}${front}${glasses}${hat}`;
+    // Kids get a bigger head for their size.
+    return p.kid ? `<g transform="translate(3 -103) scale(1.2) translate(-3 103)">${art}</g>` : art;
   }
 
-  // Front view, walking toward us (used for people crossing the street).
-  function crosserSvg(coat, skin, hair, umbrella) {
-    return `<ellipse cx="0" cy="2" rx="24" ry="6" fill="#000" fill-opacity="0.15"/>
-      <rect class="ms-fleg a" x="-12" y="-44" width="10" height="44" rx="4" fill="#3b3440"/>
-      <rect class="ms-fleg b" x="2" y="-44" width="10" height="44" rx="4" fill="#3b3440"/>
-      <path d="M-20 -84 L-28 -54 M20 -84 L28 -54" ${o} fill="none"/>
-      <rect x="-20" y="-100" width="40" height="62" rx="15" fill="${coat}" ${o}/>
-      <circle cy="-118" r="17" fill="${skin}" ${o}/>
-      <path d="M-17 -120 Q-16 -138 0 -138 Q16 -138 17 -120 Q10 -130 0 -130 Q-10 -130 -17 -120 Z" fill="${hair}"/>
-      <circle cx="-6" cy="-117" r="2" fill="${INK}"/><circle cx="6" cy="-117" r="2" fill="${INK}"/>
-      <path d="M-5 -109 Q0 -105 5 -109" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round"/>
-      ${umbrella ? `<path d="M22 -60 V-156" ${thin}/><path d="M-30 -152 Q22 -200 74 -152 Z" fill="${umbrella}" ${o}/>` : ''}`;
+  function sideTorso(p) {
+    const c = p.topColor;
+    const bottomHem = { coat: -36, jacket: -45, sweater: -45, dress: -30 }[p.top];
+    let torso;
+    let details = '';
+    if (p.top === 'dress') {
+      torso = `<path d="M-11 -101 Q-3 -105 7 -103 Q15 -101 15 -92 L13 -70 L22 -33 Q22 -29 18 -29 H-17 Q-22 -29 -21 -33 L-12 -70 L-14 -93 Q-14 -99 -11 -101 Z" fill="${c}" ${thin}/>`;
+      details = `<path d="M-12.5 -70 H13.5" stroke="${dark(c, 0.3)}" stroke-width="3.5"/><path d="M-6 -40 l4 8 M6 -42 l4 9" stroke="#fff" stroke-opacity="0.35" stroke-width="3" stroke-linecap="round"/>`;
+    } else {
+      const y = bottomHem;
+      torso = `<path d="M-11 -101 Q-3 -105 7 -103 Q16 -101 16 -92 L${p.top === 'coat' ? 19 : 17} ${y - 5} Q${p.top === 'coat' ? 19 : 17} ${y} ${p.top === 'coat' ? 13 : 12} ${y} H-11 Q-17 ${y} -16 ${y - 5} L-15 -93 Q-15 -99 -11 -101 Z" fill="${c}" ${thin}/>`;
+      if (p.top === 'coat') {
+        details = `<path d="M8 -102 L12 -86 L15 -38" fill="none" stroke="${dark(c, 0.35)}" stroke-width="2.5"/>
+          ${[-80, -66, -52].map((by, k) => `<circle cx="${13.5 + k * 0.6}" cy="${by}" r="1.9" fill="${INK}"/>`).join('')}
+          <path d="M-15.5 -64 H17.5" stroke="${dark(c, 0.3)}" stroke-width="4"/><path d="M-4 -55 h11" stroke="${dark(c, 0.35)}" stroke-width="2.5" stroke-linecap="round"/>`;
+      } else if (p.top === 'jacket') {
+        details = `<path d="M13 -101 L15.5 -47" stroke="${dark(c, 0.4)}" stroke-width="2.5"/><path d="M-15 -50 H17" stroke="${dark(c, 0.25)}" stroke-width="5"/>
+          <path d="M5 -103 Q10 -96 15 -100" fill="none" stroke="${dark(c, 0.35)}" stroke-width="2.5"/>`;
+      } else {
+        details = `<path d="M-15 -50 H17" stroke="${dark(c, 0.2)}" stroke-width="6"/><path d="M-12 -50 v4 M-6 -50 v4 M0 -50 v4 M6 -50 v4 M12 -50 v4" stroke="${dark(c, 0.35)}" stroke-width="1.5"/>
+          <path d="M-7 -103 Q3 -99 13 -102" fill="none" stroke="${dark(c, 0.3)}" stroke-width="5" stroke-linecap="round"/>`;
+      }
+    }
+    return { torso, details };
+  }
+
+  function sideParts(p) {
+    const { torso, details } = sideTorso(p);
+    const legW = p.top === 'dress' || p.bottom === 'tights' ? 9 : 12;
+    const leg = (back) => {
+      const c = back ? dark(p.legColor) : p.legColor;
+      const s = back ? dark(p.shoe) : p.shoe;
+      return `<rect x="${-legW / 2}" y="-58" width="${legW}" height="52" rx="${legW / 2 - 1}" fill="${c}" ${thin}/>
+        <path d="M-6.5 -10.5 H4 Q13 -10.5 14.5 -4 Q15.5 1 10 1 H-6.5 Q-8.5 1 -8.5 -4.5 Q-8.5 -10.5 -6.5 -10.5 Z" fill="${s}" ${thin}/>
+        <path d="M-7 -2 H13" stroke="#fff" stroke-opacity="0.45" stroke-width="2"/>`;
+    };
+    const armSwing = (back, holding) => {
+      const c = back ? dark(p.topColor) : p.topColor;
+      const skin = back ? dark(p.skin, 0.12) : p.skin;
+      let item = '';
+      if (!back && holding === 'paper') item = `<g transform="rotate(-24 0 -60)"><rect x="-6" y="-66" width="24" height="10" rx="4" fill="#fffaf1" ${thin}/><path d="M-1 -61 h14" stroke="${INK}" stroke-opacity="0.5" stroke-width="2"/></g>`;
+      if (!back && holding === 'shopping') item = `<path d="M-6 -58 Q-6 -66 1 -66 Q8 -66 8 -58" fill="none" stroke="${INK}" stroke-width="2.4"/>
+        <path d="M10 -64 L24 -90" stroke="${INK}" stroke-width="10" stroke-linecap="round"/><path d="M10 -64 L24 -90" stroke="#d99a5b" stroke-width="6" stroke-linecap="round"/><path d="M15 -73 l4 2 M19 -81 l4 2" stroke="#8a5a35" stroke-width="1.6"/>
+        <path d="M-11 -59 H13 L11 -30 Q11 -27 8 -27 H-6 Q-9 -27 -9 -30 Z" fill="${p.bagColor}" ${thin}/><path d="M-5 -45 h10" stroke="#fff" stroke-opacity="0.55" stroke-width="3" stroke-linecap="round"/>`;
+      return `${item && holding === 'shopping' ? item : ''}<rect x="-5.5" y="-101" width="11" height="40" rx="5.5" fill="${c}" ${thin}/>${hand(0, -59, skin)}${item && holding !== 'shopping' ? item : ''}`;
+    };
+    const skin = p.skin;
+    const c = p.topColor;
+    let frontArm;
+    let armMode = 'swing';
+    switch (p.hold) {
+      case 'cup':
+        armMode = 'still';
+        frontArm = `${limb('M0 -95 L-1 -73 L13 -83', c)}
+          <path d="M8 -103 H22 L20 -83 H10 Z" fill="#fffaf1" ${thin}/><rect x="9.2" y="-96" width="11.6" height="6" fill="#b86b3a"/><rect x="6.5" y="-107" width="17" height="5" rx="2.5" fill="#fffaf1" ${thin}/>
+          ${hand(15, -86, skin)}`;
+        break;
+      case 'umbrella':
+        armMode = 'still';
+        // Held out in front of the chest, the pole rising just ahead of the face.
+        frontArm = `<path d="M25 -84 V-226" stroke="${INK}" stroke-width="3.5"/><path d="M25 -86 v6 q0 6 -6 6" fill="none" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M-24 -190 Q25 -246 74 -190 Q66 -197 58 -190 Q50 -197 42 -190 Q33 -197 25 -190 Q17 -197 9 -190 Q1 -197 -8 -190 Q-16 -197 -24 -190 Z" fill="${p.umbrella}" ${o}/>
+          <path d="M25 -232 Q6 -214 -8 -190 M25 -232 Q44 -214 58 -190 M25 -232 V-190" fill="none" stroke="${INK}" stroke-opacity="0.35" stroke-width="2.5"/>
+          <path d="M25 -232 v-7" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M-8 -200 Q9 -222 24 -226" fill="none" stroke="#fff" stroke-opacity="0.45" stroke-width="4" stroke-linecap="round"/>
+          ${limb('M0 -95 L8 -80 L22 -92', c)}${hand(24, -94, skin)}`;
+        break;
+      case 'leash':
+        armMode = 'still';
+        frontArm = `<path d="M11 -64 Q40 -30 72 -27" fill="none" stroke="#e0474f" stroke-width="2.6" stroke-linecap="round"/>
+          ${limb('M0 -95 L4 -74 L10 -67', c)}${hand(11, -64, skin)}`;
+        break;
+      case 'balloon':
+        armMode = 'still';
+        frontArm = `<path d="M17 -90 Q30 -120 20 -150 Q12 -176 26 -196" fill="none" stroke="${INK}" stroke-width="1.8"/>
+          <path d="M26 -196 l-3 5 h6 Z" fill="#e0474f" ${thin}/><ellipse cx="26" cy="-214" rx="15" ry="18" fill="#e0474f" ${thin}/>
+          <path d="M18 -222 Q20 -228 26 -229" fill="none" stroke="#fff" stroke-opacity="0.75" stroke-width="3.5" stroke-linecap="round"/>
+          ${limb('M0 -95 L6 -78 L15 -86', c)}${hand(16, -88, skin)}`;
+        break;
+      case 'phone':
+        armMode = 'still';
+        frontArm = `${limb('M0 -95 L-1 -74 L10 -92', c)}<rect x="6" y="-106" width="9" height="15" rx="2" fill="${INK}"/><rect x="7.5" y="-104" width="6" height="10" fill="#9fd8f0"/>${hand(11, -93, skin)}`;
+        break;
+      default:
+        frontArm = armSwing(false, p.hold);
+    }
+    // Things carried on the body.
+    let behind = '';
+    let over = '';
+    if (p.bag === 'backpack') {
+      behind = `<rect x="-29" y="-99" width="18" height="38" rx="6" fill="${p.bagColor}" ${thin}/><rect x="-27" y="-80" width="12" height="12" rx="3" fill="${dark(p.bagColor, 0.2)}" ${thin}/>`;
+      over = `<path d="M-12 -99 Q-2 -102 3 -92 L4 -72" fill="none" stroke="${dark(p.bagColor, 0.3)}" stroke-width="4" stroke-linecap="round"/>`;
+    } else if (p.bag === 'shoulder') {
+      over = `<path d="M-3 -102 L-14 -64" stroke="${dark(p.bagColor, 0.35)}" stroke-width="3.5" stroke-linecap="round"/><path d="M-22 -68 H-4 Q-2 -68 -2 -65 L-3 -52 Q-3 -49 -6 -49 H-20 Q-23 -49 -23 -52 L-24 -65 Q-24 -68 -22 -68 Z" fill="${p.bagColor}" ${thin}/><path d="M-22 -62 h18" stroke="${INK}" stroke-opacity="0.35" stroke-width="2"/>`;
+    }
+    const scarf = p.scarf
+      ? `<path d="M-6 -99 Q-16 -97 -23 -86 L-17 -83 Q-13 -92 -4 -94 Z" fill="${p.scarf}" ${thin}/><rect x="-8" y="-106" width="21" height="9" rx="4.5" fill="${p.scarf}" ${thin}/><path d="M-3 -106 v9 M3 -106 v9" stroke="${dark(p.scarf, 0.3)}" stroke-width="1.6"/>`
+      : '';
+    const neck = `<rect x="-2" y="-106" width="9" height="8" fill="${p.skin}" ${thin}/>`;
+    return {
+      armMode,
+      backArm: armSwing(true),
+      backLeg: leg(true),
+      frontLeg: leg(false),
+      body: `<ellipse cx="0" cy="1" rx="22" ry="5" fill="#000" fill-opacity="0.16"/>${behind}${neck}${torso}${details}${scarf}${sideHead(p)}${over}`,
+      frontArm,
+    };
+  }
+
+  // ---- Front view (walking toward us; feet on y = 0) ----
+
+  function frontHead(p) {
+    const h = p.hair;
+    let back = '';
+    let front = '';
+    const short = `<path d="M-17 -118 Q-18 -139.5 0 -139.5 Q18 -139.5 17 -118 Q14 -128 6 -129 Q-1 -126 -8 -129 Q-14 -127.5 -17 -118 Z" fill="${h}" ${thin}/>`;
+    switch (p.hairStyle) {
+      case 'bob':
+        front = `<path d="M-19.5 -102 Q-22 -140 0 -140.5 Q22 -140 19.5 -102 Q15.5 -101 14.5 -107 L14.5 -121 Q9 -129.5 0 -129.5 Q-9 -129.5 -14.5 -121 L-14.5 -107 Q-15.5 -101 -19.5 -102 Z" fill="${h}" ${thin}/>`;
+        break;
+      case 'ponytail':
+        back = `<path d="M-14 -116 Q-26 -106 -22 -90 Q-18 -100 -12 -104 Z M14 -116 Q26 -106 22 -90 Q18 -100 12 -104 Z" fill="${h}" ${thin}/>`;
+        front = short;
+        break;
+      case 'bun':
+        back = `<circle cx="0" cy="-143" r="8.5" fill="${h}" ${thin}/>`;
+        front = short;
+        break;
+      case 'curly':
+        front = puffs([[-15, -110], [-16, -122], [-10, -132], [0, -137], [10, -132], [16, -122], [15, -110]], 7.5, h);
+        break;
+      case 'bald':
+        front = `<path d="M-16 -124 Q-19 -112 -15 -107 L-13 -118 Z M16 -124 Q19 -112 15 -107 L13 -118 Z" fill="${h}" ${thin}/>`;
+        break;
+      default:
+        front = short;
+    }
+    const beard = p.beard ? `<path d="M-12.5 -112 Q-12 -99 0 -98 Q12 -99 12.5 -112 Q9 -104 0 -105 Q-9 -104 -12.5 -112 Z" fill="${h}" ${thin}/><path d="M-4 -107.5 Q0 -106 4 -107.5" fill="none" stroke="${INK}" stroke-width="1.8" stroke-linecap="round"/>` : '';
+    const face = `<circle cx="-6" cy="-119" r="2.1" fill="${INK}"/><circle cx="6" cy="-119" r="2.1" fill="${INK}"/>
+      <path d="M-9.5 -125 q3.5 -2 7 0 M2.5 -125 q3.5 -2 7 0" fill="none" stroke="${dark(h, 0.35)}" stroke-width="2" stroke-linecap="round"/>
+      <path d="M0 -116 q2 2.5 -0.5 4" fill="none" stroke="${INK}" stroke-opacity="0.55" stroke-width="1.8" stroke-linecap="round"/>
+      ${p.beard ? '' : `<path d="M-5 -109.5 Q0 -105.5 5 -109.5" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round"/>`}
+      <circle cx="-10.5" cy="-112.5" r="3.4" fill="#ff8a8a" fill-opacity="0.45"/><circle cx="10.5" cy="-112.5" r="3.4" fill="#ff8a8a" fill-opacity="0.45"/>`;
+    const ears = `<ellipse cx="-16.5" cy="-117" rx="3.4" ry="4.6" fill="${p.skin}" ${thin}/><ellipse cx="16.5" cy="-117" rx="3.4" ry="4.6" fill="${p.skin}" ${thin}/>`;
+    const glasses = p.glasses ? `<circle cx="-6.5" cy="-119" r="5" fill="#fff" fill-opacity="0.25" stroke="${INK}" stroke-width="2.2"/><circle cx="6.5" cy="-119" r="5" fill="#fff" fill-opacity="0.25" stroke="${INK}" stroke-width="2.2"/><path d="M-1.5 -119 h3" stroke="${INK}" stroke-width="2"/>` : '';
+    let hat = '';
+    if (p.hat === 'beanie') {
+      hat = `<path d="M-18.5 -126 Q-18.5 -152 0 -152 Q18.5 -152 18.5 -126 Z" fill="${p.hatColor}" ${thin}/><rect x="-19.5" y="-130" width="39" height="7" rx="3.5" fill="${dark(p.hatColor, 0.15)}" ${thin}/><circle cx="0" cy="-154" r="6" fill="#fffaf1" ${thin}/>`;
+    } else if (p.hat === 'cap') {
+      hat = `<path d="M-17.5 -127 Q-17.5 -148 0 -148 Q17.5 -148 17.5 -127 Z" fill="${p.hatColor}" ${thin}/><ellipse cx="0" cy="-127" rx="19" ry="4" fill="${dark(p.hatColor, 0.15)}" ${thin}/><circle cx="0" cy="-148" r="2.5" fill="${dark(p.hatColor, 0.2)}"/>`;
+    } else if (p.hat === 'fedora') {
+      hat = `<ellipse cx="0" cy="-129" rx="26" ry="5" fill="${p.hatColor}" ${thin}/><path d="M-14 -129 L-12 -145 Q0 -150 12 -145 L14 -129 Z" fill="${p.hatColor}" ${thin}/><rect x="-13" y="-135" width="26" height="5" fill="${INK}" fill-opacity="0.75"/>`;
+    }
+    return `${back}${ears}<circle cx="0" cy="-118" r="16.5" fill="${p.skin}" ${thin}/>${face}${beard}${front}${glasses}${hat}`;
+  }
+
+  function frontParts(p) {
+    const c = p.topColor;
+    const legW = p.top === 'dress' || p.bottom === 'tights' ? 9 : 11;
+    const leg = (x) => `<rect x="${x - legW / 2}" y="-58" width="${legW}" height="52" rx="4" fill="${p.legColor}" ${thin}/>
+      <ellipse cx="${x}" cy="-4.5" rx="8.5" ry="5.5" fill="${p.shoe}" ${thin}/><path d="M${x - 5} -7 q5 -3 10 0" fill="none" stroke="#fff" stroke-opacity="0.5" stroke-width="2"/>`;
+    let torso;
+    if (p.top === 'dress') {
+      torso = `<path d="M-14 -102 Q-21 -100 -21 -91 L-17 -70 L-28 -32 Q-28 -29 -24 -29 H24 Q28 -29 28 -32 L17 -70 L21 -91 Q21 -100 14 -102 Z" fill="${c}" ${thin}/><path d="M-17 -70 H17" stroke="${dark(c, 0.3)}" stroke-width="3.5"/>`;
+    } else {
+      const y = { coat: -36, jacket: -45, sweater: -45 }[p.top];
+      torso = `<path d="M-15 -102 Q-23 -100 -23 -91 L-25 ${y - 5} Q-25 ${y} -20 ${y} H20 Q25 ${y} 25 ${y - 5} L23 -91 Q23 -100 15 -102 Z" fill="${c}" ${thin}/>`;
+      if (p.top === 'coat') torso += `<path d="M-8 -102 L0 -88 L8 -102 Z" fill="#fffaf1" ${thin}/><path d="M0 -88 V-37" stroke="${dark(c, 0.35)}" stroke-width="2.5"/>${[-78, -64, -50].map((by) => `<circle cx="4" cy="${by}" r="1.9" fill="${INK}"/>`).join('')}<path d="M-24 -64 H24" stroke="${dark(c, 0.3)}" stroke-width="4"/>`;
+      else if (p.top === 'jacket') torso += `<path d="M0 -101 V-46" stroke="${dark(c, 0.4)}" stroke-width="2.5"/><path d="M-24 -50 H24" stroke="${dark(c, 0.25)}" stroke-width="5"/><path d="M-9 -102 L0 -94 L9 -102" fill="none" stroke="${dark(c, 0.35)}" stroke-width="2.5"/>`;
+      else torso += `<path d="M-24 -50 H24" stroke="${dark(c, 0.2)}" stroke-width="6"/><path d="M-8 -102 Q0 -97 8 -102" fill="none" stroke="${dark(c, 0.3)}" stroke-width="5" stroke-linecap="round"/>`;
+    }
+    const scarf = p.scarf ? `<rect x="-12" y="-107" width="24" height="10" rx="5" fill="${p.scarf}" ${thin}/><path d="M4 -99 L9 -78 L1 -78 L-1 -99 Z" fill="${p.scarf}" ${thin}/>` : '';
+    const bag = p.bag === 'shoulder' ? `<path d="M-14 -101 L14 -62" stroke="${dark(p.bagColor, 0.35)}" stroke-width="3.5" stroke-linecap="round"/><rect x="8" y="-66" width="18" height="16" rx="3" fill="${p.bagColor}" ${thin}/>` : '';
+    const straps = p.bag === 'backpack' ? `<path d="M-14 -101 L-12 -68 M14 -101 L12 -68" stroke="${dark(p.bagColor, 0.3)}" stroke-width="4" stroke-linecap="round"/>` : '';
+    const arm = (side, still) => {
+      const x = side * 20;
+      if (still === 'umbrella') {
+        return `<path d="M${x + 4} -114 V-228" stroke="${INK}" stroke-width="3.5"/>
+          <path d="M${x - 46} -192 Q${x + 4} -250 ${x + 54} -192 Q${x + 46} -199 ${x + 38} -192 Q${x + 29} -199 ${x + 21} -192 Q${x + 12} -199 ${x + 4} -192 Q${x - 4} -199 ${x - 13} -192 Q${x - 21} -199 ${x - 29} -192 Q${x - 38} -199 ${x - 46} -192 Z" fill="${p.umbrella}" ${o}/>
+          <path d="M${x + 4} -234 Q${x - 14} -216 ${x - 29} -192 M${x + 4} -234 Q${x + 22} -216 ${x + 38} -192 M${x + 4} -234 V-192" fill="none" stroke="${INK}" stroke-opacity="0.35" stroke-width="2.5"/>
+          <path d="M${x + 4} -234 v-7" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/>
+          ${limb(`M${x - side * 3} -96 L${x + side * 2} -110 L${x + 4} -120`, c)}${hand(x + 4, -122, p.skin)}`;
+      }
+      let item = '';
+      if (still === 'cup') item = `<path d="M${x - 6} -64 H${x + 6} L${x + 4.5} -48 H${x - 4.5} Z" fill="#fffaf1" ${thin}/><rect x="${x - 5}" y="-59" width="10" height="5" fill="#b86b3a"/><rect x="${x - 7.5}" y="-67" width="15" height="4.5" rx="2" fill="#fffaf1" ${thin}/>`;
+      if (still === 'shopping') item = `<path d="M${x - 11} -58 H${x + 11} L${x + 9} -30 H${x - 9} Z" fill="${p.bagColor}" ${thin}/><path d="M${x - 5} -58 Q${x - 5} -64 ${x} -64 Q${x + 5} -64 ${x + 5} -58" fill="none" stroke="${INK}" stroke-width="2.2"/>`;
+      return `<rect x="${x - 5}" y="-100" width="10" height="41" rx="5" fill="${c}" ${thin}/>${item}${hand(x, -58, p.skin)}`;
+    };
+    const rightHold = p.hold === 'umbrella' ? 'umbrella' : p.hold === 'cup' ? 'cup' : '';
+    const leftHold = p.hold === 'shopping' ? 'shopping' : '';
+    return {
+      legL: leg(-7),
+      legR: leg(7),
+      body: `<ellipse cx="0" cy="1" rx="26" ry="6" fill="#000" fill-opacity="0.16"/><rect x="-4" y="-106" width="8" height="8" fill="${p.skin}" ${thin}/>${torso}${scarf}${straps}${frontHead(p)}${bag}`,
+      armL: arm(-1, leftHold),
+      armR: arm(1, rightHold),
+      rightStill: rightHold === 'umbrella',
+    };
+  }
+
+  // ---- A small dog (side view, facing right) ----
+
+  function dogParts(c) {
+    const leg = (x, back) => `<rect x="${x - 3.5}" y="-20" width="7" height="20" rx="3.5" fill="${back ? dark(c, 0.25) : c}" ${thin}/><ellipse cx="${x + 1.5}" cy="-1" rx="5" ry="2.6" fill="${back ? dark(c, 0.25) : c}" ${thin}/>`;
+    return {
+      legsA: leg(9, false) + leg(-11, true),
+      legsB: leg(5, true) + leg(-15, false),
+      tail: `<path d="M-19 -27 Q-31 -32 -29 -45" fill="none" stroke="${INK}" stroke-width="8" stroke-linecap="round"/><path d="M-19 -27 Q-31 -32 -29 -45" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round"/>`,
+      body: `<ellipse cx="0" cy="1" rx="24" ry="4" fill="#000" fill-opacity="0.16"/>
+        <ellipse cx="-1" cy="-23" rx="21" ry="10.5" fill="${c}" ${thin}/><ellipse cx="-6" cy="-26" rx="7" ry="4" fill="#fff" fill-opacity="0.35"/>
+        <path d="M10 -28 Q16 -38 20 -34" fill="${c}"/>
+        <circle cx="21" cy="-34" r="10" fill="${c}" ${thin}/><ellipse cx="30" cy="-30.5" rx="7.5" ry="5.2" fill="${c}" ${thin}/>
+        <circle cx="36.5" cy="-32" r="2.5" fill="${INK}"/><circle cx="23.5" cy="-36.5" r="1.9" fill="${INK}"/>
+        <path d="M30 -26.5 q3 2.5 6 0" fill="none" stroke="${INK}" stroke-width="1.8" stroke-linecap="round"/><path d="M33 -25.5 q1 4 3 3" fill="#ff8a8a"/>
+        <path d="M15 -42 Q9 -42 10 -28 Q15 -29 17.5 -36 Z" fill="${dark(c, 0.3)}" ${thin}/>
+        <path d="M12.5 -30 Q15 -24 19 -24" fill="none" stroke="#e0474f" stroke-width="4" stroke-linecap="round"/><circle cx="16" cy="-23" r="2" fill="#ffd35e"/>`,
+    };
+  }
+
+  // ---- Who's out today ----
+
+  const STROLLERS = [
+    { dir: 'right', d: 40, delay: -4, skin: SKIN[0], hair: '#8a5a35', hairStyle: 'bob', top: 'coat', topColor: '#ff6b5b', bottom: 'tights', legColor: '#3b3440', shoe: '#2b2a33', hold: 'cup', bag: 'shoulder', bagColor: '#b86b3a' },
+    { dir: 'left', d: 46, delay: -22, skin: SKIN[3], hair: '#2b2a33', hairStyle: 'short', beard: true, top: 'jacket', topColor: '#1fa3a3', bottom: 'jeans', legColor: '#3f5a85', shoe: '#8a5a35', hold: 'leash', dog: '#d9a066' },
+    { dir: 'right', d: 54, delay: -33, skin: SKIN[1], hair: '#d7d4cf', hairStyle: 'bald', glasses: true, hat: 'fedora', hatColor: '#5a6178', top: 'coat', topColor: '#9a7552', bottom: 'trousers', legColor: '#4a4852', shoe: '#2b2a33', hold: 'paper' },
+    { dir: 'left', d: 43, delay: -8, skin: SKIN[4], hair: '#1f1a1a', hairStyle: 'curly', top: 'sweater', topColor: '#ffc145', bottom: 'jeans', legColor: '#3f5a85', shoe: '#fffaf1', hold: 'shopping', bag: 'backpack', bagColor: '#8fb8ff' },
+    {
+      dir: 'right', d: 50, delay: -16, skin: SKIN[2], hair: '#3b2a20', hairStyle: 'ponytail', top: 'jacket', topColor: '#c9a3d6', bottom: 'jeans', legColor: '#3f5a85', shoe: '#e0474f', hold: 'swing',
+      kid: { kid: true, skin: SKIN[2], hair: '#3b2a20', hairStyle: 'bun', top: 'dress', topColor: '#6fbf73', bottom: 'tights', legColor: '#fffaf1', shoe: '#e0474f', hold: 'balloon' },
+    },
+  ];
+
+  const CROSSERS = [
+    { skin: SKIN[1], hair: '#3b2a20', hairStyle: 'short', top: 'jacket', topColor: '#8fb8ff', bottom: 'jeans', legColor: '#3f5a85', shoe: '#fffaf1', hold: 'cup' },
+    { skin: SKIN[0], hair: '#d9b36a', hairStyle: 'ponytail', top: 'coat', topColor: '#ff9aa8', bottom: 'tights', legColor: '#3b3440', shoe: '#2b2a33', hold: 'swing', bag: 'shoulder', bagColor: '#fffaf1' },
+    { skin: SKIN[3], hair: '#2b2a33', hairStyle: 'curly', glasses: true, top: 'sweater', topColor: '#6fbf73', bottom: 'trousers', legColor: '#4a4852', shoe: '#8a5a35', hold: 'shopping', bagColor: '#ffc145' },
+    { skin: SKIN[2], hair: '#1f1a1a', hairStyle: 'short', beard: true, hat: 'cap', hatColor: '#e0474f', top: 'jacket', topColor: '#5a6178', bottom: 'jeans', legColor: '#3f5a85', shoe: '#fffaf1', hold: 'swing', bag: 'backpack', bagColor: '#ffc145' },
+    { skin: SKIN[4], hair: '#2b2a33', hairStyle: 'bob', top: 'dress', topColor: '#c9a3d6', bottom: 'tights', legColor: '#2b2a33', shoe: '#e0474f', hold: 'swing' },
+    { skin: SKIN[1], hair: '#b0b0b0', hairStyle: 'bun', glasses: true, top: 'coat', topColor: '#1fa3a3', bottom: 'trousers', legColor: '#5a5468', shoe: '#2b2a33', hold: 'swing', bag: 'shoulder', bagColor: '#b86b3a' },
+  ];
+
+  // Dress everyone for the day's weather.
+  function dressFor(p, weather, k) {
+    const q = Object.assign({}, p);
+    if (weather === 'rain') {
+      if (['swing', 'cup', 'paper', 'shopping', 'phone'].includes(q.hold)) {
+        q.hold = 'umbrella';
+        q.umbrella = UMBRELLAS[k % UMBRELLAS.length];
+      } else if (q.hold === 'leash' && !q.hat) {
+        q.hat = 'cap';
+        q.hatColor = '#ffc145';
+      }
+    } else if (weather === 'snow') {
+      if (q.hat !== 'fedora') {
+        q.hat = 'beanie';
+        q.hatColor = ['#e0474f', '#1fa3a3', '#ffc145', '#8fb8ff', '#fffaf1'][k % 5];
+      }
+      q.scarf = ['#ffc145', '#e0474f', '#6fbf73', '#fffaf1', '#c9a3d6'][(k + 2) % 5];
+      if (q.top === 'sweater' || q.top === 'jacket') q.top = 'coat';
+    }
+    if (q.kid) q.kid = dressFor(q.kid, weather === 'rain' ? 'clear' : weather, k + 1);
+    return q;
+  }
+
+  // One baked image per part; parts share a frame so they line up.
+  const SIDE_BOX = { x: -64, y: -256, w: 164, h: 264 };
+  const FRONT_BOX = { x: -80, y: -258, w: 170, h: 266 };
+  const DOG_BOX = { x: -40, y: -52, w: 86, h: 58 };
+  const PEOPLE_BLUR = 2.2;
+
+  function partImage(key, box, art, tod) {
+    const k = `p|${key}|${tod}`;
+    if (!carImages.has(k)) carImages.set(k, bakeSmall(`${box.x} ${box.y} ${box.w} ${box.h}`, art, tod, PEOPLE_BLUR));
+    return carImages.get(k);
+  }
+
+  function part(href, box, cls, pivot) {
+    const origin = pivot ? ` style="transform-origin:${(((pivot[0] - box.x) / box.w) * 100).toFixed(2)}% ${(((pivot[1] - box.y) / box.h) * 100).toFixed(2)}%"` : '';
+    return `<image${cls ? ` class="${cls}"` : ''} href="${href}" x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}"${origin}/>`;
+  }
+
+  // ---- Walk cycles as flipbooks ----
+  // A walker's whole stride is drawn once as a strip of FRAMES poses. On screen the strip
+  // just steps along inside a small window while the walker slides down the street, so
+  // the browser never has to redraw anyone: both moves are plain layer shifts.
+  const FRAMES = 12;
+  const TAU = Math.PI * 2;
+
+  function sidePose(s, phi) {
+    const leg = 24 * Math.cos(TAU * phi);
+    const arm = -20 * Math.cos(TAU * phi);
+    // The hip dips when the legs are apart, so both feet stay on the ground.
+    const drop = 50 * (1 - Math.cos((leg * Math.PI) / 180));
+    return `<g transform="translate(0 ${drop.toFixed(2)})">
+      <g transform="rotate(${(-arm).toFixed(2)} 0 -96)">${s.backArm}</g>
+      <g transform="rotate(${(-leg).toFixed(2)} 0 -50)">${s.backLeg}</g>
+      <g transform="rotate(${leg.toFixed(2)} 0 -50)">${s.frontLeg}</g>
+      ${s.body}
+      ${s.armMode === 'swing' ? `<g transform="rotate(${arm.toFixed(2)} 0 -96)">${s.frontArm}</g>` : s.frontArm}</g>`;
+  }
+
+  function dogPose(d, phi) {
+    const skew = 26 * Math.cos(TAU * phi);
+    const legs = (a, art) => `<g transform="translate(0 -18) skewX(${a.toFixed(2)}) translate(0 18)">${art}</g>`;
+    const bob = -1.5 * Math.abs(Math.sin(TAU * phi));
+    return `<g transform="translate(0 ${bob.toFixed(2)})">
+      <g transform="rotate(${(16 * Math.sin(TAU * 2 * phi)).toFixed(2)} -19 -27)">${d.tail}</g>
+      ${legs(-skew, d.legsB)}${legs(skew, d.legsA)}${d.body}</g>`;
+  }
+
+  // One strip image: FRAMES copies of the box side by side, each in the next pose.
+  function flipbook(key, box, tod, pose) {
+    const k = `book|${key}|${tod}`;
+    if (!carImages.has(k)) {
+      const res = pixelScale(1, 1.25);
+      let frames = '';
+      for (let f = 0; f < FRAMES; f++) frames += `<g transform="translate(${f * box.w - box.x} ${-box.y})">${pose(f / FRAMES)}</g>`;
+      const w = box.w * FRAMES;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${Math.round(w * res)}" height="${Math.round(box.h * res)}" viewBox="0 0 ${w} ${box.h}"><defs>${frostFilter(tod, PEOPLE_BLUR)}</defs><g filter="url(#b)">${frames}</g></svg>`;
+      carImages.set(k, svgUrl(svg, w * res, box.h * res));
+    }
+    return carImages.get(k);
+  }
+
+  // A flipbook placed at (x, y) in the walker's own units (feet at 0,0), scaled by `sc`.
+  function sprite(url, box, x, y, sc, cycle) {
+    return `<div class="ms-sprite" style="left:${(x + box.x * sc).toFixed(1)}px;top:${(y + box.y * sc).toFixed(1)}px;width:${(box.w * sc).toFixed(1)}px;height:${(box.h * sc).toFixed(1)}px">
+      <img class="ms-strip" alt="" src="${url}" style="animation-duration:${cycle}s"></div>`;
+  }
+
+  function frontFigure(p, key, tod) {
+    const f = frontParts(p);
+    const img = (name, art) => partImage(`front|${key}|${name}`, FRONT_BOX, art, tod);
+    return `${part(img('ll', f.legL), FRONT_BOX, 'ms-limb ms-lift-l', [-7, -50])}
+      ${part(img('lr', f.legR), FRONT_BOX, 'ms-limb ms-lift-r', [7, -50])}
+      ${part(img('bo', f.body), FRONT_BOX)}
+      ${part(img('al', f.armL), FRONT_BOX, 'ms-limb ms-farm-l', [-20, -96])}
+      ${part(img('ar', f.armR), FRONT_BOX, f.rightStill ? '' : 'ms-limb ms-farm-r', [20, -96])}`;
+  }
+
+  // The strollers on the far sidewalk. Each is its own small element on the "stage" (a
+  // layer laid out in scene units), so sliding along the street is done by the graphics
+  // card and only the swinging limbs are redrawn. A stride is ~80 units, so each
+  // person's step rhythm matches how fast they cover ground (a crossing takes --d s).
+  function strollersHtml(weather, tod) {
+    return STROLLERS.map((base, k) => {
+      const p = dressFor(base, weather, k);
+      const key = `${k}|${weather}`;
+      const gait = (80 * p.d) / 2520;
+      const parts = sideParts(p);
+      let html = sprite(flipbook(`side|${key}`, SIDE_BOX, tod, (phi) => sidePose(parts, phi)), SIDE_BOX, 0, 0, 1, gait.toFixed(2));
+      if (p.kid) {
+        const kidParts = sideParts(p.kid);
+        html = sprite(flipbook(`side|${key}|kid`, SIDE_BOX, tod, (phi) => sidePose(kidParts, phi)), SIDE_BOX, -46, 0, 0.64, (gait * 0.7).toFixed(2)) + html;
+      }
+      if (p.dog) {
+        const dog = dogParts(p.dog);
+        html += sprite(flipbook(`dog|${p.dog}`, DOG_BOX, tod, (phi) => dogPose(dog, phi)), DOG_BOX, 60, 0, 1, (gait * 0.5).toFixed(2));
+      }
+      return `<div class="ms-walker ${p.dir}" style="--d:${p.d}s;--delay:${p.delay}s"><div class="ms-walker-body" style="top:606px${p.dir === 'left' ? ';transform:scaleX(-1)' : ''}">${html}</div></div>`;
+    }).join('');
+  }
+
+  // Lays the stage out exactly like the scene's SVG layers (viewBox W x H, sliced to
+  // cover, anchored bottom-centre), so walkers line up with the street.
+  function layoutStage() {
+    const stage = host && host.querySelector('.ms-stage');
+    if (!stage) return;
+    const bw = stage.parentElement.clientWidth;
+    const bh = stage.parentElement.clientHeight;
+    if (!bw || !bh) return;
+    const sc = Math.max(bw / W, bh / H);
+    stage.style.transform = `translate(${((bw - W * sc) / 2).toFixed(1)}px, ${(bh - H * sc).toFixed(1)}px) scale(${sc.toFixed(4)})`;
+  }
+
+  function crosserSvg(k, weather, tod) {
+    const p = dressFor(CROSSERS[k % CROSSERS.length], weather, k + 3);
+    return `<g class="ms-gait" style="--gait:0.95s">${frontFigure(p, `${k % CROSSERS.length}|${weather}`, tod)}</g>`;
   }
 
   // -- The shops across the street --
@@ -468,10 +954,11 @@
   // ---------------------------------------------------------------------------------
 
   function bake(body, P, blur) {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax slice">
+    const res = pixelScale(0.75, 1.5) * 0.8;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${Math.round(W * res)}" height="${Math.round(H * res)}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax slice">
       <defs><filter id="f" x="-3%" y="-3%" width="106%" height="106%"><feGaussianBlur stdDeviation="${blur}"/><feColorMatrix type="saturate" values="1.08"/></filter></defs>
       <g filter="url(#f)">${body}<rect x="-60" y="-60" width="${W + 120}" height="${H + 120}" fill="${P.tint}" fill-opacity="${P.tintOp}"/></g></svg>`;
-    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    return svgUrl(svg, W * res, H * res);
   }
 
   function backLayer(P, weather, rng) {
@@ -600,20 +1087,12 @@
   // ---------------------------------------------------------------------------------
 
   function midMoving(P, weather, rng) {
-    const umbrella = weather === 'rain';
-    const pick = (list) => list[Math.floor(rng() * list.length)];
-    const walker = (coat, dir, d, delay, extra) =>
-      `<g class="ms-walker ${dir}" style="--d:${d}s;--delay:${delay}s"><g transform="translate(0 606) scale(${dir === 'left' ? -1 : 1} 1)"><g class="ms-step ms-blur ms-shaded">${strollerSvg(coat, pick(SKIN), pick(HAIR), extra, umbrella ? pick(UMBRELLAS) : '')}</g></g></g>`;
     return `
       <defs><radialGradient id="ms-headglow"><stop offset="0" stop-color="#fff6c8" stop-opacity="1"/><stop offset="0.3" stop-color="#fff3b0" stop-opacity="0.6"/><stop offset="1" stop-color="#fff3b0" stop-opacity="0"/></radialGradient>
         <radialGradient id="ms-pool"><stop offset="0" stop-color="#fff3b0" stop-opacity="0.55"/><stop offset="1" stop-color="#fff3b0" stop-opacity="0"/></radialGradient>
         <radialGradient id="ms-brake"><stop offset="0" stop-color="#ff5a4a" stop-opacity="0.95"/><stop offset="1" stop-color="#ff5a4a" stop-opacity="0"/></radialGradient>
         <radialGradient id="ms-puff"><stop offset="0" stop-color="#e9e6ee" stop-opacity="0.85"/><stop offset="1" stop-color="#e9e6ee" stop-opacity="0"/></radialGradient></defs>
       ${[0, 1, 2].map((k) => `<g class="ms-bird" style="--d:${24 + k * 8}s;--delay:${-k * 11}s"><g class="ms-blur"><path transform="translate(0 ${180 + k * 36})" class="ms-wingbeat" d="M0 10 Q8 0 16 9 Q24 0 32 10" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/></g></g>`).join('')}
-      ${walker('#ff6b5b', 'right', 34, -4, `<rect x="10" y="-80" width="22" height="16" fill="#fffaf1" ${thin}/>`)}
-      ${walker('#1fa3a3', 'left', 42, -20)}
-      ${walker('#ffc145', 'right', 38, -30, `<path d="M-16 -128 H16 L10 -142 H-10 Z" fill="${INK}"/>`)}
-      ${walker('#8fb8ff', 'left', 47, -8)}
       <g class="ms-lane far"></g>
       <g class="ms-crossers"></g>
       <g class="ms-lane near"></g>
@@ -852,6 +1331,7 @@
           fresh.parked = false;
           fresh.el.setAttribute('class', 'ms-car');
           car.el.replaceWith(fresh.el);
+          flatten(fresh.el);
           cars[i] = fresh;
           placeCar(fresh);
           return;
@@ -881,14 +1361,15 @@
     const T = traffic;
     const group = T.root.querySelector('.ms-crossers');
     const count = 1 + (T.rng() < 0.55 ? 1 : 0);
-    const rain = shown && shown.weather === 'rain';
     for (let k = 0; k < count; k++) {
       const el = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      const pick = (list) => list[Math.floor(T.rng() * list.length)];
-      el.innerHTML = `<g class="ms-cross ms-blur ms-shaded">${crosserSvg(pick(['#ff6b5b', '#1fa3a3', '#ffc145', '#8fb8ff', '#c9a3d6', '#6fbf73']), pick(SKIN), pick(HAIR), rain ? pick(UMBRELLAS) : '')}</g>`;
+      el.innerHTML = crosserSvg(Math.floor(T.rng() * CROSSERS.length), shown.weather, shown.tod);
       el.setAttribute('opacity', '0');
       group.appendChild(el);
-      T.crossers.push({ el, x: CROSS_A + 26 + T.rng() * (CROSS_B - CROSS_A - 52), t: -(0.4 + k * 1.3 + T.rng() * 0.6), dur: 6.2 + T.rng() * 1.2 });
+      flatten(el);
+      // Two people take opposite sides of the crosswalk and set off a couple of seconds apart.
+      const side = count === 1 ? T.rng() : k === 0 ? 0.15 : 0.85;
+      T.crossers.push({ el, x: CROSS_A + 26 + side * (CROSS_B - CROSS_A - 52), t: -(0.4 + k * 2.4 + T.rng() * 0.5), dur: 6.2 + T.rng() * 1.2 });
     }
   }
 
@@ -972,6 +1453,8 @@
     frame = requestAnimationFrame(tick);
   }
 
+  window.addEventListener('resize', () => layoutStage());
+
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) start();
   });
@@ -991,15 +1474,20 @@
     const svg = (cls, body) =>
       `<svg class="ms-layer ${cls} tod-${tod}${lit}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax slice" aria-hidden="true">${body}</svg>`;
     host.style.background = P.sky2;
+    host.querySelectorAll('.ms-view > img').forEach((img) => forgetLayer(img.getAttribute('data-svg') || ''));
     host.querySelector('.ms-view').innerHTML = `
       <img class="ms-layer ms-back" alt="" src="${bake(backLayer(P, weather, rng), P, 6)}">
       <img class="ms-layer ms-mid" alt="" src="${bake(midLayer(P, weather, rng), P, 4.5)}">
+      <div class="ms-layer ms-mid ms-stage-host"><div class="ms-stage">${strollersHtml(weather, tod)}</div></div>
       ${svg('ms-mid ms-moving', midMoving(P, weather, rng))}
       <img class="ms-layer ms-front" alt="" src="${bake(frontLayer(P, weather), Object.assign({}, P, { tintOp: P.tintOp * 0.7 }), 5)}">
       ${svg('ms-front ms-moving', frontMoving(P, weather, rng))}
       ${weatherSheets(weather, rng)}`;
     host.querySelector('.ms-glass-host').innerHTML = glassLayer(weather, tod, rng);
+    host.querySelectorAll('.ms-view > img').forEach((img) => img.setAttribute('data-svg', img.getAttribute('src')));
+    layoutStage();
     setupTraffic(host.querySelector('.ms-mid.ms-moving'), rng);
+    flatten(host);
     // Settle the traffic into a natural spread before anyone sees it.
     for (let k = 0; k < 240; k++) stepTraffic(1 / 20);
     traffic.ready = true;
@@ -1031,6 +1519,24 @@
       return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-14 -210 ${spec.w + 28} 236" width="${(spec.w + 28) * 0.9}" height="${236 * 0.9}"><g${flip}>${spec.draw(color, v)}${wheels}</g></svg>`;
     },
     kinds: () => Object.keys(VEHICLES),
+    // For tests: every person drawn sharp in a mid-stride pose, for one weather.
+    sketchPeople(weather) {
+      const pose = (art, deg, px, py) => `<g transform="rotate(${deg} ${px} ${py})">${art}</g>`;
+      const side = STROLLERS.map((base, k) => {
+        const p = dressFor(base, weather, k);
+        const draw = (q, x, sc) => {
+          const t = sideParts(q);
+          return `<g transform="translate(${x} 0) scale(${sc})">${pose(t.backArm, 18, 0, -96)}${pose(t.backLeg, -20, 0, -50)}${pose(t.frontLeg, 20, 0, -50)}${t.body}${t.armMode === 'swing' ? pose(t.frontArm, -18, 0, -96) : t.frontArm}</g>`;
+        };
+        const dog = p.dog ? (() => { const d = dogParts(p.dog); return `<g transform="translate(60 0)">${d.tail}${d.legsB}${d.legsA}${d.body}</g>`; })() : '';
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-110 -256 250 264" width="250" height="264">${p.kid ? draw(p.kid, -46, 0.64) : ''}${draw(p, 0, 1)}${dog}</svg>`;
+      });
+      const front = CROSSERS.map((base, k) => {
+        const f = frontParts(dressFor(base, weather, k + 3));
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-80 -258 170 266" width="170" height="266">${f.legL}<g transform="translate(0 -6)">${f.legR}</g>${f.body}${f.armL}${f.armR}</svg>`;
+      });
+      return side.concat(front);
+    },
     // For tests: the live traffic state (read-only use).
     get traffic() {
       return traffic;

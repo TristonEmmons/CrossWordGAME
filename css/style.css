@@ -441,32 +441,67 @@ body:not([data-screen='menu']) .menu-scene * {
   animation-name: ms-cross-back;
 }
 
-.ms-step {
-  animation: ms-bounce 0.4s ease-in-out infinite alternate;
+/* The walkers' stage: a layer laid out in scene units by js/menuscene.js. */
+.ms-stage-host {
+  overflow: hidden;
 }
 
-.ms-leg,
-.ms-arm {
+.ms-stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1600px;
+  height: 900px;
+  transform-origin: 0 0;
+}
+
+.ms-stage .ms-walker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+}
+
+.ms-walker-body {
+  position: absolute;
+  left: 0;
+  transform-origin: 0 0;
+}
+
+/* A flipbook: a window one frame wide, with the strip of 12 poses stepping through it. */
+.ms-sprite {
+  position: absolute;
+  overflow: hidden;
+}
+
+.ms-strip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1200%;
+  height: 100%;
+  will-change: transform;
+  animation: ms-frames 1s steps(12) infinite;
+}
+
+@keyframes ms-frames { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+
+/* People (and the dog): each limb is its own image, pivoting at the hip or shoulder
+   (set inline as a transform-origin). --gait is one full stride, in seconds. */
+.ms-limb {
   transform-box: fill-box;
-  transform-origin: 50% 0;
-  animation: ms-legs 0.8s ease-in-out infinite alternate;
 }
 
-.ms-leg.b {
-  animation-direction: alternate-reverse;
-}
+.ms-gait { animation: ms-gait var(--gait) ease-in-out infinite; }
+.ms-lift-l { animation: ms-lift var(--gait) ease-in-out infinite; }
+.ms-lift-r { animation: ms-lift var(--gait) ease-in-out calc(var(--gait) * -0.5) infinite; }
+.ms-farm-l { animation: ms-farm var(--gait) ease-in-out calc(var(--gait) * -0.5) infinite; }
+.ms-farm-r { animation: ms-farm-r var(--gait) ease-in-out infinite; }
 
-.ms-cross {
-  animation: ms-bounce 0.35s ease-in-out infinite alternate;
-}
-
-.ms-fleg {
-  animation: ms-feet 0.7s ease-in-out infinite alternate;
-}
-
-.ms-fleg.b {
-  animation-direction: alternate-reverse;
-}
+@keyframes ms-gait { 0%, 50%, 100% { transform: translateY(0); } 25%, 75% { transform: translateY(-3px); } }
+@keyframes ms-lift { 0%, 50%, 100% { transform: translateY(0); } 25% { transform: translateY(-7px) scaleY(0.95); } }
+@keyframes ms-farm { 0%, 100% { transform: rotate(7deg); } 50% { transform: rotate(-3deg); } }
+@keyframes ms-farm-r { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(3deg); } }
 
 .ms-wingbeat {
   transform-box: fill-box;
@@ -484,9 +519,6 @@ body:not([data-screen='menu']) .menu-scene * {
 
 @keyframes ms-cross { from { transform: translateX(-460px); } to { transform: translateX(2060px); } }
 @keyframes ms-cross-back { from { transform: translateX(2060px); } to { transform: translateX(-460px); } }
-@keyframes ms-bounce { from { transform: translateY(0); } to { transform: translateY(-2px); } }
-@keyframes ms-legs { from { transform: rotate(-18deg); } to { transform: rotate(18deg); } }
-@keyframes ms-feet { from { transform: translateY(0); } to { transform: translateY(-6px); } }
 @keyframes ms-flap { from { transform: scaleY(1); } to { transform: scaleY(-0.4); } }
 @keyframes ms-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 @keyframes ms-steam { 0% { opacity: 0; transform: translateY(8px); } 40% { opacity: 0.9; } 100% { opacity: 0; transform: translateY(-14px); } }
