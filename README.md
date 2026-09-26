@@ -10,7 +10,7 @@ Progress, settings and the list of words already used are saved in the browser's
 
 **Updating a hosted copy.** `index.html` loads its styles and scripts with a version tag (`?v=...`). Bump that tag in `index.html` whenever you ship changes, so browsers fetch the new files together instead of mixing new and cached ones.
 
-**Link previews.** The share picture is `assets/img/share-card.jpg` (1200×630). Its tags in `index.html` point at `https://crazy-wordsearch.netlify.app/`. If the public address changes, update the two addresses there.
+**Link previews.** The share picture is `assets/img/share-card.jpg` (1200×630). Its tags in `index.html` point at `https://crazywordsearch.netlify.app/`. If the public address changes, update the two addresses there.
 
 ## Music
 
