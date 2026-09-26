@@ -158,6 +158,9 @@
     const part = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
     const next = Save.nextLevel();
     if (!Save.progress.daily[CC.todayKey()]) return `${part}! Today’s paper just arrived. Only 5 words!`;
+    const weather = CC.MenuScene && CC.MenuScene.weather;
+    if (weather === 'rain') return `${part}! Rainy out there. Perfect puzzle weather.`;
+    if (weather === 'snow') return `${part}! It’s snowing! Stay warm with a puzzle.`;
     return next > 1 ? `${part}! Level ${next} is ready for you.` : `${part}! Ready to find some words?`;
   }
 

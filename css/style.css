@@ -283,6 +283,9 @@ code {
 }
 
 /* ---------- Main-menu backdrop: café-patio street scene behind frosted glass ---------- */
+/* Built by js/menuscene.js. Layers, back to front: sky and skyline, the street (image +
+   moving traffic), the patio (image + string lights, steam, rain or snow), then the
+   frosted pane and the droplets on the glass. */
 
 .menu-scene {
   position: fixed;
@@ -292,13 +295,39 @@ code {
   transition: opacity 0.4s ease, visibility 0s;
 }
 
-.ms-view,
-.ms-svg {
+.ms-view {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
+}
+
+/* Every layer is a little bigger than the screen so parallax never shows an edge. */
+.ms-layer {
+  position: absolute;
+  top: -28px;
+  left: -40px;
+  width: calc(100% + 80px);
+  height: calc(100% + 56px);
   display: block;
+  object-fit: cover;
+  object-position: 50% 100%;
+  will-change: transform;
+}
+
+.ms-back { transform: translate3d(calc(var(--px, 0px) * 0.25), calc(var(--py, 0px) * 0.25), 0); }
+.ms-mid { transform: translate3d(calc(var(--px, 0px) * 0.6), calc(var(--py, 0px) * 0.6), 0); }
+.ms-front { transform: translate3d(var(--px, 0px), var(--py, 0px), 0) scale(1.02); transform-origin: 50% 100%; }
+
+/* Lighter version for slow machines (switched on by js/menuscene.js): flat layers, no
+   parallax, weather held still. */
+.ms-lite .ms-layer {
+  will-change: auto;
+  transform: none;
+}
+
+.ms-lite .ms-sheet,
+.ms-lite .ms-sway {
+  will-change: auto;
+  animation: none;
 }
 
 /* Only on the main menu: elsewhere it's hidden (not painted) and paused. */
@@ -312,27 +341,10 @@ body:not([data-screen='menu']) .menu-scene * {
   animation-play-state: paused;
 }
 
-/* Frosted glass. The blur comes from the scene itself: the still layer is an image with
-   the blur baked in, and each moving piece is blurred on its own, far cheaper than a
-   live full-screen backdrop blur. This pane then lightens it all to
-   paper tone with a faint frost grain and a sheen, so the menu stays easy to read. */
-.ms-still {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 100%;
-}
-
-.ms-moving {
-  will-change: transform;
-}
-
-.ms-blur {
-  filter: blur(4px);
-}
-
+/* Frosted glass. The scenery arrives already blurred (baked into the layer images) and
+   each moving piece carries its own small blur. The pane is clearest at the edges and
+   most frosted behind the menu, where the reading happens. */
+.ms-blur { filter: blur(4px); }
 .tod-evening .ms-shaded { filter: blur(4px) brightness(0.9); }
 .tod-night .ms-shaded { filter: blur(4px) brightness(0.68) saturate(0.85); }
 
@@ -340,75 +352,110 @@ body:not([data-screen='menu']) .menu-scene * {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(115deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 38%, rgba(255, 255, 255, 0.14) 62%, rgba(255, 255, 255, 0) 80%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),
-    radial-gradient(ellipse at 50% 42%, rgba(255, 250, 242, 0.62), rgba(255, 248, 238, 0.4) 70%);
-  box-shadow: inset 0 0 140px rgba(255, 255, 255, 0.45);
+    linear-gradient(115deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 34%, rgba(255, 255, 255, 0.12) 60%, rgba(255, 255, 255, 0) 78%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.3 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse 34% 62% at 50% 46%, rgba(255, 250, 242, 0.74), rgba(255, 250, 242, 0.5) 55%, rgba(255, 249, 240, 0.22) 100%);
+  box-shadow: inset 0 0 160px rgba(255, 255, 255, 0.35);
 }
 
-/* Time-of-day palettes */
-.ms-svg { --sky1: #9fd8f0; --sky2: #e6f6fb; --city: #c7d7e2; --road: #6b6770; --walk: #e9dfd2; --sun: #ffe08a; --win: #dcecf5; --tint: transparent; }
-.ms-svg.tod-morning { --sky1: #ffc9a0; --sky2: #fff1dc; --city: #e8cdb8; --sun: #ffd07a; --tint: rgba(255, 190, 120, 0.08); }
-.ms-svg.tod-evening { --sky1: #f08a6b; --sky2: #ffd29a; --city: #b98f9a; --road: #5c5663; --sun: #ffb35e; --win: #f3d6b8; --tint: rgba(120, 60, 110, 0.14); }
-.ms-svg.tod-night { --sky1: #1f2550; --sky2: #3d4378; --city: #2c3160; --road: #3a3844; --walk: #8f8aa0; --sun: #fdf1c0; --win: #5a6090; --tint: rgba(20, 24, 60, 0.38); }
+@media (max-width: 700px) {
+  .menu-frost {
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.3 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),
+      linear-gradient(rgba(255, 250, 242, 0.42), rgba(255, 250, 242, 0.62) 30%, rgba(255, 250, 242, 0.62) 80%, rgba(255, 250, 242, 0.4));
+  }
+}
 
-.ms-sky1 { stop-color: var(--sky1); }
-.ms-sky2 { stop-color: var(--sky2); }
-.ms-sun { fill: var(--sun); }
-.ms-moonbite { fill: var(--sky1); }
-.ms-city { fill: var(--city); stroke: rgba(43, 42, 51, 0.15); stroke-width: 3; }
-.ms-citywin { fill: rgba(255, 255, 255, 0.5); }
-.tod-night .ms-citywin,
-.tod-evening .ms-citywin { fill: #ffd86b; }
-.ms-win { fill: var(--win); }
-.ms-road { fill: var(--road); }
-.ms-walk { fill: var(--walk); }
-.ms-tint { fill: var(--tint); }
+.ms-glass-host,
+.ms-glass {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.ms-drip {
+  animation: ms-drip var(--d) ease-in var(--delay) infinite;
+}
+
+/* Pieces */
 .ms-beam { opacity: 0; }
-.tod-night .ms-beam { opacity: 0.45; }
-.tod-evening .ms-beam { opacity: 0.25; }
-.ms-lampglow { opacity: 0.45; }
-.ms-bulb { fill: #fff3b0; stroke: #2b2a33; stroke-width: 2.5; }
-.tod-night .ms-bulb,
-.tod-evening .ms-bulb {
-  fill: #ffe27a;
-  filter: drop-shadow(0 0 6px #ffd35e);
-  animation: ms-twinkle 3s ease-in-out infinite;
+.tod-night .ms-beam { opacity: 0.55; }
+.tod-evening .ms-beam { opacity: 0.3; }
+.ms-brake { opacity: 0; transition: opacity 0.2s; }
+.lit .ms-brake { opacity: 0.45; }
+.ms-car.braking .ms-brake { opacity: 1; }
+
+
+.ms-signal circle { fill: #3a3844; }
+.ms-signal.phase-red .r { fill: #ff4a4a; filter: drop-shadow(0 0 6px #ff4a4a); }
+.ms-signal.phase-yellow .y { fill: #ffc145; filter: drop-shadow(0 0 6px #ffc145); }
+.ms-signal.phase-green .g { fill: #4fd36a; filter: drop-shadow(0 0 6px #4fd36a); }
+
+/* Rain and snow sheets: tall tiled layers sliding down by exactly one tile per loop. */
+.ms-sway {
+  position: absolute;
+  inset: 0;
+  animation: ms-sway 3.4s ease-in-out infinite alternate;
 }
+
+.ms-sway.slow {
+  animation-duration: 5s;
+}
+
+.ms-sheet {
+  position: absolute;
+  left: -5%;
+  width: 110%;
+  top: calc(var(--tile) * -1);
+  height: calc(100% + var(--tile) * 2);
+  background-size: var(--tile) var(--tile);
+  will-change: transform;
+  animation: ms-fall 1s linear infinite;
+}
+
+.ms-sheet.rain.near { animation-duration: 0.42s; }
+.ms-sheet.rain.far { animation-duration: 0.6s; }
+.ms-sheet.snow.near { animation-duration: 7s; }
+.ms-sheet.snow.far { animation-duration: 11s; }
+
+@keyframes ms-fall { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, var(--tile), 0); } }
+@keyframes ms-sway { from { transform: translateX(-18px); } to { transform: translateX(18px); } }
 
 /* Motion */
-.ms-car,
 .ms-walker,
 .ms-bird {
   animation: ms-cross var(--d) linear var(--delay) infinite;
 }
 
-.ms-car.left,
 .ms-walker.left {
   animation-name: ms-cross-back;
-}
-
-.ms-wheel {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: ms-spin 0.5s linear infinite;
-}
-
-.ms-bounce {
-  animation: ms-bounce 0.35s ease-in-out infinite alternate;
 }
 
 .ms-step {
   animation: ms-bounce 0.4s ease-in-out infinite alternate;
 }
 
-.ms-leg {
+.ms-leg,
+.ms-arm {
   transform-box: fill-box;
   transform-origin: 50% 0;
   animation: ms-legs 0.8s ease-in-out infinite alternate;
 }
 
 .ms-leg.b {
+  animation-direction: alternate-reverse;
+}
+
+.ms-cross {
+  animation: ms-bounce 0.35s ease-in-out infinite alternate;
+}
+
+.ms-fleg {
+  animation: ms-feet 0.7s ease-in-out infinite alternate;
+}
+
+.ms-fleg.b {
   animation-direction: alternate-reverse;
 }
 
@@ -426,24 +473,17 @@ body:not([data-screen='menu']) .menu-scene * {
   animation-delay: -1.3s;
 }
 
-.ms-tl { fill: #3a3844; }
-.ms-tl.r { animation: ms-light-r 12s steps(1) infinite; }
-.ms-tl.y { animation: ms-light-y 12s steps(1) infinite; }
-.ms-tl.g { animation: ms-light-g 12s steps(1) infinite; }
-
 @keyframes ms-cross { from { transform: translateX(-460px); } to { transform: translateX(2060px); } }
 @keyframes ms-cross-back { from { transform: translateX(2060px); } to { transform: translateX(-460px); } }
-@keyframes ms-spin { to { transform: rotate(360deg); } }
 @keyframes ms-bounce { from { transform: translateY(0); } to { transform: translateY(-2px); } }
 @keyframes ms-legs { from { transform: rotate(-18deg); } to { transform: rotate(18deg); } }
+@keyframes ms-feet { from { transform: translateY(0); } to { transform: translateY(-6px); } }
 @keyframes ms-flap { from { transform: scaleY(1); } to { transform: scaleY(-0.4); } }
 @keyframes ms-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 @keyframes ms-steam { 0% { opacity: 0; transform: translateY(8px); } 40% { opacity: 0.9; } 100% { opacity: 0; transform: translateY(-14px); } }
-@keyframes ms-light-r { 0% { fill: #e0474f; } 50% { fill: #3a3844; } }
-@keyframes ms-light-y { 0% { fill: #3a3844; } 88% { fill: #ffc145; } }
-@keyframes ms-light-g { 0% { fill: #3a3844; } 50% { fill: #4fc36a; } 88% { fill: #3a3844; } }
+@keyframes ms-drip { 0% { transform: translateY(-80px); } 100% { transform: translateY(1000px); } }
 
-/* Reduced motion: freeze the street mid-bustle rather than emptying it. */
+/* Reduced motion: no traffic loop or parallax, and the rest freezes mid-bustle. */
 @media (prefers-reduced-motion: reduce) {
   .menu-scene * {
     animation-duration: var(--d, 1s) !important;
