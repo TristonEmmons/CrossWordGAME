@@ -3438,6 +3438,69 @@ body.hide-word-list .word-bank {
   }
 }
 
+/* Phones: a compact game bar so the board gets the room. The level title shares the top
+   row with the corner sound/settings buttons, and the timer and hints sit in a slim row
+   below; the word list is a little shorter. */
+@media (max-width: 600px) {
+  .game-bar {
+    gap: 6px 10px;
+    padding: max(12px, env(safe-area-inset-top)) 128px 6px 12px;
+  }
+
+  .game-info {
+    min-width: 0;
+  }
+
+  .game-info h2 {
+    font-size: calc(1.2rem * var(--ui-scale));
+  }
+
+  .progress {
+    font-size: calc(0.85rem * var(--ui-scale));
+    gap: 6px;
+  }
+
+  .game-tools {
+    width: 100%;
+    gap: 10px;
+  }
+
+  .timer {
+    font-size: calc(1.05rem * var(--ui-scale));
+    min-width: 0;
+    text-align: left;
+  }
+
+  .hint-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .hint-btn svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  .word-bank {
+    max-height: 19vh;
+  }
+}
+
+/* Short phones (e.g. iPhone SE): the masthead keeps just the paper's name. */
+@media (max-width: 600px) and (max-height: 740px) {
+  .dateline {
+    display: none;
+  }
+
+  .masthead {
+    padding-top: 4px;
+  }
+
+  .word-bank {
+    max-height: 17vh;
+  }
+}
+
 /* ---------- Modals ---------- */
 
 .modal {

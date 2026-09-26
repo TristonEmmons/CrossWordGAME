@@ -162,14 +162,21 @@
       hints: hints.map((h) => ({ word: h.word, row: h.row, col: h.col })),
       used: hintsUsed(),
       elapsed: currentElapsed(),
+      size, // the board it was played on (phones use smaller boards)
     };
     Save.saveProgress();
   }
 
   function restore() {
-    const saved = Save.progress.inProgress[puzzle.level];
+    let saved = Save.progress.inProgress[puzzle.level];
     elapsed = 0;
     usedHintCount = 0;
+    // A game started on a different-sized board (phone vs computer) can't be resumed
+    // here: its found words sit in other places. Keep the time and hints used; the words
+    // start fresh. (Older saves don't record a size: they were full-size boards.)
+    if (saved && !puzzle.daily && (saved.size || CC.levelConfig(puzzle.level).gridSize) !== puzzle.size) {
+      saved = { elapsed: saved.elapsed, used: saved.used != null ? saved.used : (saved.hints || []).length };
+    }
     if (!saved) return;
     elapsed = saved.elapsed || 0;
     (saved.found || []).forEach((f) => {

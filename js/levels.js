@@ -16,7 +16,31 @@
     { from: 26, grid: 35, words: [24, 30], len: [7, 12], dirs: Object.keys(CC.DIRS) },
   ];
 
-  CC.levelConfig = function (level) {
+  // Phones get smaller boards so the letters stay big enough to read and tap. Each tier
+  // has a phone board size and a cap on the word count; the words come from the same
+  // level (the first few of its list), so it's the same puzzle, just a smaller page.
+  const PHONE = {
+    1: { grid: 12, maxWords: 9 },
+    6: { grid: 13, maxWords: 10 },
+    11: { grid: 14, maxWords: 11 },
+    16: { grid: 15, maxWords: 11 },
+    21: { grid: 15, maxWords: 11 },
+    26: { grid: 16, maxWords: 12 },
+  };
+
+  // True on phones: the screen's short side is under 600px. Based on the device rather
+  // than the window, so resizing a computer's window never swaps the board mid-game.
+  // Returns false (computers, tablets), 'phone', or 'small' (short phones like an
+  // iPhone SE, which get boards two squares smaller again).
+  CC.compactBoards = function () {
+    const s = window.screen || {};
+    const w = s.width || window.innerWidth;
+    const h = s.height || window.innerHeight;
+    if (Math.min(w, h) >= 600) return false;
+    return Math.max(w, h) < 700 ? 'small' : 'phone';
+  };
+
+  CC.levelConfig = function (level, compact) {
     let tier = TIERS[0];
     TIERS.forEach((t) => {
       if (level >= t.from) tier = t;
@@ -27,11 +51,16 @@
       const extra = Math.min(8, Math.floor((level - 26) / 4));
       words = [words[0] + extra, words[1] + extra];
     }
+    const phone = compact ? PHONE[tier.from] : null;
+    const small = compact === 'small';
     return {
       level,
-      gridSize: tier.grid,
+      compact: !!phone,
+      gridSize: phone ? phone.grid - (small ? 2 : 0) : tier.grid,
       minWords: words[0],
       maxWords: words[1],
+      // How many of the level's words a phone board shows.
+      showWords: phone ? phone.maxWords - (small ? 1 : 0) : Infinity,
       minLen: tier.len[0],
       maxLen: tier.len[1],
       dirs: tier.dirs,
@@ -108,7 +137,8 @@
   // same level always rebuilds the same board.
   CC.loadLevel = function (level) {
     if (CC.isDaily(level)) return loadDaily(level);
-    const config = CC.levelConfig(level);
+    const compact = CC.compactBoards();
+    const config = CC.levelConfig(level, compact);
     const progress = CC.Save.progress;
     let record = progress.levels[level];
 
@@ -129,7 +159,8 @@
       CC.Save.saveProgress();
     }
 
-    const puzzle = CC.generatePuzzle(record.words, config, record.seed, record.bonus);
+    const words = record.words.slice(0, config.showWords);
+    const puzzle = CC.generatePuzzle(words, config, record.seed, record.bonus);
     puzzle.level = level;
     puzzle.config = config;
     return puzzle;
